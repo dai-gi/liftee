@@ -10,7 +10,7 @@ module Liftee
   class Application < Rails::Application
     config.load_defaults 6.1
 
-    config.generators do │g│
+    config.generators do |g|
       g.test_framework :rspec,
         fixtures: false,
         view_specs: false,
