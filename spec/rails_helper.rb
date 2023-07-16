@@ -63,4 +63,12 @@ RSpec.configure do |config|
 
   # https://github.com/alpaca-tc/rspec-parameterized-context
   config.extend RSpecParameterizedContext
+
+  # https://github.com/thoughtbot/shoulda-matchers
+  Shoulda::Matchers.configure do |config|
+    config.integrate do |with|
+      with.test_framework :rspec
+      with.library :rails
+    end
+  end
 end
