@@ -1,7 +1,7 @@
 class Api::V1::CompanyController < ApiController
   before_action :set_company, only: [:show]
 
-  rescu_from ActiveRecord::RecordNotFound do |exception|
+  rescue_from ActiveRecord::RecordNotFound do |exception|
     render json: { error: '404 not found' }, status: 404
   end
 
