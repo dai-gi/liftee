@@ -3,7 +3,7 @@ import './style.css'
 import App from './App.vue'
 
 // Vue Router
-import { router } from './router'
+import { router } from './router/router'
 
 // Vuetify
 import '@mdi/font/css/materialdesignicons.css'
