@@ -23,6 +23,10 @@
         </v-row>
       </v-container>
     </v-app-bar>
-    <router-view></router-view>
+    <v-main>
+      <v-conteiner class="py-8 px-6" fluid>
+        <router-view></router-view>
+      </v-conteiner>
+    </v-main>
   </v-app>
 </template>
