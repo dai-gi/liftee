@@ -1,3 +1,7 @@
+<script setup>
+  import ApiCompany from './components/ApiCompany.vue';
+</script>
+
 <template>
   <v-app>
     <v-app-bar color="blue-grey-lighten-2">
@@ -13,7 +17,7 @@
           </v-col>
           <v-col cols="2">
             <router-link to="/">
-              <p class="text-white ma-2 pa-2 text-h6">xxxx株式会社</p>
+              <ApiCompany />
             </router-link>
           </v-col>
           <v-col cols="3" offset="2" class="d-flex flex-row">
@@ -24,9 +28,9 @@
       </v-container>
     </v-app-bar>
     <v-main>
-      <v-conteiner class="py-8 px-6" fluid>
+      <v-container class="py-8 px-6" fluid>
         <router-view></router-view>
-      </v-conteiner>
+      </v-container>
     </v-main>
   </v-app>
 </template>
