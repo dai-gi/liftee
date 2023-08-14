@@ -1,5 +1,5 @@
 <script setup>
-  import ApiCompany from './components/ApiCompany.vue';
+  import CompanyName from './components/CompanyName.vue';
 </script>
 
 <template>
@@ -17,7 +17,7 @@
           </v-col>
           <v-col cols="2">
             <router-link to="/">
-              <ApiCompany />
+              <CompanyName />
             </router-link>
           </v-col>
           <v-col cols="3" offset="2" class="d-flex flex-row">
