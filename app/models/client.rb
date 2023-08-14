@@ -1,3 +1,15 @@
+# == Schema Information ==
+#
+# Table name:   clients
+# id            :bigint      null: false    PK
+# name          :string      null: false
+# email         :string      null: false
+# phone_number  :string      null: false
+# remarks       :string
+# created_at    :datetime    null: false    precision: 6
+# updated_at    :datetimen   null: false    precision: 6
+# company_id    :integer                    FK
+
 class Client < ApplicationRecord
   belongs_to :company
 
