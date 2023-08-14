@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory} from 'vue-router'
-import ProjectList from '../pages/ProjectList.vue'
+import Project from '../pages/Project.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: '/project-list',
-      name: 'project-list',
-      component: ProjectList,
+      path: '/project',
+      name: 'project',
+      component: Project,
     },
   ]
 })
