@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_08_13_095618) do
+ActiveRecord::Schema.define(version: 2023_08_14_073106) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -53,7 +53,10 @@ ActiveRecord::Schema.define(version: 2023_08_13_095618) do
     t.string "overview"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "client_id"
+    t.index ["client_id"], name: "index_projects_on_client_id"
   end
 
   add_foreign_key "clients", "companies"
+  add_foreign_key "projects", "clients"
 end

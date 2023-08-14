@@ -11,6 +11,7 @@
 # updated_at    :datetimen   null: false    precision: 6
 
 class Project < ApplicationRecord
+  belongs_to :client
 
   validates :name, presence: true
   validates :start_date, presence: true
@@ -18,6 +19,10 @@ class Project < ApplicationRecord
   validates :status, presence: true
 
   def self.ransackable_attributes(auth_object = nil)
-    ["created_at", "end_date", "id", "name", "overview", "start_date", "status", "updated_at"]
+    ["created_at", "end_date", "id", "name", "overview", "start_date", "status", "updated_at", "client_id"]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ["clients"]
   end
 end
