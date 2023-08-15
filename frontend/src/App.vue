@@ -11,7 +11,7 @@
             <router-link to="/">
               <v-toolbar-title class="text-white text-h6 font-weight-bold ma-2 pa-2">Liftee</v-toolbar-title>
             </router-link>
-            <router-link to="/project">
+            <router-link to="/project-list">
               <p class="text-white ma-2 pa-2">プロジェクトリスト</p>
             </router-link>
           </v-col>
