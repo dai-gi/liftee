@@ -27,7 +27,7 @@
     <v-col v-for="client in clients" :key="client" cols="12" class="mb-5">
       <h3 class="d-flex flex-row ma-2">{{ client.name }}</h3>
       <template v-for="project in projects" :key="project">
-        <router-link to="/">
+        <router-link to="/project-detail">
           <template v-if="client.id === project.client_id">
             <v-card v-click-outside="onClickOutside" @click="active = true" :color="active ? 'grey-lighten-4' : undefined" :dark="active" class="d-flex align-center ma-3 pa-3 text-blue-darken-2" variant="outlined">
               <v-row>
