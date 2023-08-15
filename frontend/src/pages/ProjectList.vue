@@ -45,7 +45,9 @@
                 </v-col>
                 <v-col cols="2">
                   <v-card-subtitle class="pb-3">ステータス</v-card-subtitle>
-                  <v-card-text class="pa-0">{{ project.status }}</v-card-text>
+                  <v-card-text v-if="project.status === 'pending'" class="pa-0">未着工</v-card-text>
+                  <v-card-text v-if="project.status === 'start'" class="pa-0">着工</v-card-text>
+                  <v-card-text v-if="project.status === 'end'" class="pa-0">竣工</v-card-text>
                 </v-col>
                 <v-col cols="1" class="d-flex align-center justify-center">
                   <v-btn size="small" variant="text" icon="mdi-dots-vertical">
