@@ -13,6 +13,8 @@
 class Project < ApplicationRecord
   belongs_to :client
 
+  enum status: { pending: 0, start: 1, end: 2 }
+
   validates :name, presence: true
   validates :start_date, presence: true
   validates :end_date, presence: true
