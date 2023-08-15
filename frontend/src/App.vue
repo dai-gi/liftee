@@ -7,7 +7,7 @@
     <v-app-bar color="blue-darken-2">
       <v-container>
         <v-row align="center" no-gutters>
-          <v-col cols="6" class="d-flex flex-row align-center">
+          <v-col cols="7" class="d-flex flex-row align-center">
             <router-link to="/">
               <v-toolbar-title class="text-white ma-2 pa-2">Liftee<CompanyName /></v-toolbar-title>
             </router-link>
@@ -15,7 +15,7 @@
               <p class="project-list text-white text-button ml-5">プロジェクトリスト</p>
             </router-link>
           </v-col>
-          <v-col cols="5" offset="1" class="d-flex flex-row">
+          <v-col cols="4" offset="1" class="d-flex flex-row">
             <v-text-field density="compact" variant="solo" label="検索" placeholder="プロジェクト名、作業内容など..." append-inner-icon="mdi-magnify"  hide-details @click:append-inner="onClick"></v-text-field>
             <v-btn icon="mdi-dots-vertical" class="mx-5"></v-btn>
           </v-col>
