@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_08_12_132430) do
+ActiveRecord::Schema.define(version: 2023_08_14_073106) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -33,6 +33,8 @@ ActiveRecord::Schema.define(version: 2023_08_12_132430) do
     t.string "remarks"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "company_id"
+    t.index ["company_id"], name: "index_clients_on_company_id"
   end
 
   create_table "companies", force: :cascade do |t|
@@ -51,6 +53,10 @@ ActiveRecord::Schema.define(version: 2023_08_12_132430) do
     t.string "overview"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "client_id"
+    t.index ["client_id"], name: "index_projects_on_client_id"
   end
 
+  add_foreign_key "clients", "companies"
+  add_foreign_key "projects", "clients"
 end
