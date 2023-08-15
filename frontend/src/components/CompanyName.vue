@@ -15,5 +15,5 @@
 </script>
 
 <template>
-  <p class="text-white ma-2 pa-2">{{ companyData }}</p>
+  <span v-if="companyData" class="text-white font-weight-light ma-2 pa-2"><span class="pr-3">｜</span>{{ companyData }}</span>
 </template>
