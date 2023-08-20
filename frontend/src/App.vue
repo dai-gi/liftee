@@ -23,7 +23,7 @@
       </v-container>
     </v-app-bar>
     <v-main>
-      <v-container class="py-8 px-6" fluid>
+      <v-container fluid>
         <router-view></router-view>
       </v-container>
     </v-main>
@@ -33,5 +33,9 @@
 <style>
   .project-list:hover {
     opacity: 0.7;
+  }
+
+  main {
+    width: 1500px;
   }
 </style>
