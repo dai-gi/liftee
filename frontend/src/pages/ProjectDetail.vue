@@ -1,62 +1,25 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
-let day = moment('2022-08-22 06:00:00');
-let time = day.format('HH:mm');
-let date = day.format();
-let dates = ref([]);
-const num = 17;
+const startDate = DateTime.fromISO('2022-08-01');
+const endDate = DateTime.fromISO('2022-09-01');
+const dateAndWeekdayList = ref([])
 
-const addDates = () => {
-  for (let i = 0; i <= num; i++) {
-    dates.value.push(
-      {
-        time: time,
-        date: date
-      }
-    );
-    time = day.add(1, 'hour').format('HH:mm');
-    date = day.format();
+const getDates = (start_date, end_date) => {
+  let currentDate = start_date;
+  while(currentDate <= end_date) {
+    dateAndWeekdayList.value.push({
+      date: currentDate.toFormat('MM月dd日'),
+      weekday: currentDate.setLocale('ja').toFormat('EEE')
+    });
+    currentDate = currentDate.plus({ days: 1 });
   }
 }
 
-const years = () => {
-  return day.format('YYYY年MM月DD日')
-}
-
-const timeOnly = (date) => {
-  return moment(date).format('HH:mm')
-}
-
-const isMorning = (time) => {
-  return moment(time).hour() <= 12;
-}
-
-const isAfternoon = (time) => {
-  return moment(time).hour() >= 12;
-}
-
-const tasks = [
-  {
-    name: 'task1',
-    date: '2022-08-22 06:30:59'
-  },
-  {
-    name: 'task2',
-    date: '2022-08-22 07:50:00'
-  },
-  {
-    name: 'task3',
-    date: '2022-08-22 22:30:59'
-  },
-]
-
 onMounted(() => {
-  addDates();
+  getDates(startDate, endDate);
 })
-
-console.log(isAfternoon(tasks[1].date))
 
 </script>
 
@@ -82,162 +45,34 @@ console.log(isAfternoon(tasks[1].date))
     <p class="font-weight-bold">プロジェクトA</p>
   </v-sheet>
   <v-row>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
-    <v-col cols="2" class="px-1 py-0">
-      <div class="border-non-bottom py-3">
-        <p>8/1 (月)</p>
-      </div>
-      <div class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-      </div>
-      <div  class="border-non-bottom h-200">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-      </div>
-      <div  class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-      </div>
-      <div class="border-non-bottom h-500">
-        <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-      </div>
-    </v-col>
+    <template v-for="date in dateAndWeekdayList" :key="date">
+      <v-col cols="2" class="px-1 py-0 mb-5">
+        <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-non-bottom py-3">
+            <p>{{ date.date }}({{ date.weekday }})</p>
+        </div>
+        <div class="border-non-bottom h-200">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
+        </div>
+        <div  class="border-non-bottom h-500">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
+        </div>
+        <div  class="border-non-bottom h-500">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
+        </div>
+        <div  class="border-non-bottom h-200">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
+        </div>
+        <div  class="border-non-bottom h-500">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
+        </div>
+        <div  class="border-non-bottom h-500">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
+        </div>
+        <div class="border-non-bottom h-500">
+          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
+        </div>
+      </v-col>
+    </template>
   </v-row>
 </template>
 
