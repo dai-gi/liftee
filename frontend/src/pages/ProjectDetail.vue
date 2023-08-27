@@ -2,8 +2,8 @@
 import { onMounted, ref, computed } from 'vue';
 import { DateTime } from 'luxon';
 
-const startDate = DateTime.fromISO('2022-08-01');
-const endDate = DateTime.fromISO('2022-09-01');
+const startDate = DateTime.fromSQL('2022-08-01');
+const endDate = DateTime.fromSQL('2022-09-01');
 const dateAndWeekdayList = ref([]);
 const displayList = ref([]);
 const itemsPerPage = 7;
@@ -115,32 +115,172 @@ onMounted(() => {
     <v-btn :style="{ 'opacity': [ currentPage === totalNumberOfPages ?  0.2 : 1] }" :ripple="toggleRipple" variant="plain" icon="mdi-chevron-right" @click="clickNextButton"></v-btn>
   </v-container>
   <div class="x-scroll">
-    <div class="w-1800 pa-3">
+    <div class="w-1800 h-4500 pa-3">
       <template v-for="date in displayList" :key="date">
         <div class="w-250 float-left">
           <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-all minus-margin py-3">
               <p>{{ date.date }}({{ date.weekday }})</p>
           </div>
-          <div class="border-all minus-margin h-200">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">7:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour === 7">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div  class="border-all minus-margin h-500">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">8:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 8 && DateTime.fromSQL(task.start_datetime).hour < 10">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div  class="border-all minus-margin h-500">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">10:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 10 && DateTime.fromSQL(task.start_datetime).hour < 12">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div  class="border-all minus-margin h-200">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">12:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour === 12">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div  class="border-all minus-margin h-500">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">13:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 13 && DateTime.fromSQL(task.start_datetime).hour < 15">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div  class="border-all minus-margin h-500">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">15:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 15 && DateTime.fromSQL(task.start_datetime).hour < 17">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
-          <div class="border-all minus-margin h-500">
-            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
+          <div class="border-all minus-margin h-800 pa-2">
+            <p class="text-caption text-left text-grey-darken-3 mb-2">17:00</p>
+            <template v-for="task in tasks" :key="task">
+              <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
+                <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 17">
+                  <router-link to="/project-detail">
+                    <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                      <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                      <div class="text-body-2 pa-2 text-grey-darken-2">
+                        <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                        <p>{{ task.work_place }} {{ task.name }}</p>
+                        <p>{{ task.vehicles }}</p>
+                        <p>{{ task.notes }}</p>
+                        <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                        <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                        <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      </div>
+                    </v-card>
+                  </router-link>
+                </template>
+              </template>
+            </template>
           </div>
         </div>
       </template>
@@ -160,12 +300,13 @@ onMounted(() => {
     border: 1px solid #1565C0;
   }
 
-  .h-200 {
-    height: 200px;
+  .h-800 {
+    max-height: 1600px;
+    min-height: 800px;
   }
 
-  .h-500 {
-    height: 500px;
+  .h-4500 {
+    height:4500px;
   }
 
   .w-700 {
@@ -175,10 +316,6 @@ onMounted(() => {
   .w-250 {
     width: 250px;
   }
-
-  /* .margin {
-    margin: 0 calc(50% - 50vw) 20px;
-  } */
 
   .minus-margin {
     margin-right: -1px;
