@@ -1,24 +1,87 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { DateTime } from 'luxon';
 
 const startDate = DateTime.fromISO('2022-08-01');
 const endDate = DateTime.fromISO('2022-09-01');
-const dateAndWeekdayList = ref([])
+const dateAndWeekdayList = ref([]);
+const displayList = ref([]);
+const itemsPerPage = 7;
+const currentPage = ref(1);
+const paginateNumbersList = ref([]);
+const totalNumberOfPages = ref(0);
 
 const getDates = (start_date, end_date) => {
   let currentDate = start_date;
   while(currentDate <= end_date) {
     dateAndWeekdayList.value.push({
-      date: currentDate.toFormat('MM月dd日'),
+      date: currentDate.toFormat('M月d日'),
       weekday: currentDate.setLocale('ja').toFormat('EEE')
     });
     currentDate = currentDate.plus({ days: 1 });
   }
+  displayList.value = dateAndWeekdayList.value.slice(0, 7);
 }
 
+const paginateNumbers = () => {
+  totalNumberOfPages.value = Math.ceil(dateAndWeekdayList.value.length / itemsPerPage);
+  let num = 1;
+  let startNumber = 0;
+  let endNumber= itemsPerPage;
+  while(paginateNumbersList.value.length < totalNumberOfPages.value) {
+    paginateNumbersList.value.push({
+      id: num,
+      startNumber: startNumber,
+      endNumber: endNumber
+    })
+    num++
+    startNumber = endNumber
+    endNumber = endNumber + 7
+  }
+}
+
+const clickPageNumber = (element) => {
+  currentPage.value = element.id
+  for(let i = 0; i < paginateNumbersList.value.length; i++) {
+    if(paginateNumbersList.value[i].id == currentPage.value) {
+      displayList.value = dateAndWeekdayList.value.slice(element.startNumber, element.endNumber)
+    }
+  }
+}
+
+const clickNextButton = () => {
+  currentPage.value = currentPage.value < totalNumberOfPages.value ? currentPage.value + 1 : 5
+  const paginateNumber = paginateNumbersList.value.find((element) => element.id === currentPage.value);
+  for(let i = 0; i < paginateNumbersList.value.length; i++) {
+    if(paginateNumbersList.value[i].id == currentPage.value) {
+      displayList.value = dateAndWeekdayList.value.slice(paginateNumber.startNumber, paginateNumber.endNumber)
+    }
+  }
+}
+
+const clickPrevButton = () => {
+  currentPage.value = currentPage.value > 1 ? currentPage.value - 1 : 1
+  const paginateNumber = paginateNumbersList.value.find((element) => element.id === currentPage.value);
+  for(let i = 0; i < paginateNumbersList.value.length; i++) {
+    if(paginateNumbersList.value[i].id == currentPage.value) {
+      displayList.value = dateAndWeekdayList.value.slice(paginateNumber.startNumber, paginateNumber.endNumber)
+    }
+  }
+}
+
+const toggleRipple = computed(() => {
+  if(currentPage.value === totalNumberOfPages.value) {
+    return false
+  } else if (currentPage.value === 1) {
+    return false
+  } else {
+    return true
+  }
+})
+
 onMounted(() => {
-  getDates(startDate, endDate);
+  getDates(startDate, endDate),
+  paginateNumbers()
 })
 
 </script>
@@ -33,57 +96,68 @@ onMounted(() => {
         <p class="text-black">仮設EV2</p>
       </v-btn>
     </div>
-    <v-btn variant="plain" icon="mdi-plus-circle-outline">
+    <v-btn variant="plain" icon="mdi-plus-circle-outline" size="x-large">
       <template v-slot>
         <v-icon color="blue-darken-4"></v-icon>
       </template>
     </v-btn>
   </v-sheet>
-  <v-sheet class="d-flex justify-space-between align-center my-10">
+  <v-sheet class="d-flex justify-space-between align-center mt-10">
     <p class="font-weight-bold">仮設エレベータ１号機</p>
     <p class="font-weight-bold">週間揚重予定表</p>
     <p class="font-weight-bold">プロジェクトA</p>
   </v-sheet>
-  <v-row>
-    <template v-for="date in dateAndWeekdayList" :key="date">
-      <v-col cols="2" class="px-1 py-0 mb-5">
-        <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-non-bottom py-3">
-            <p>{{ date.date }}({{ date.weekday }})</p>
-        </div>
-        <div class="border-non-bottom h-200">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
-        </div>
-        <div  class="border-non-bottom h-500">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
-        </div>
-        <div  class="border-non-bottom h-500">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
-        </div>
-        <div  class="border-non-bottom h-200">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
-        </div>
-        <div  class="border-non-bottom h-500">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
-        </div>
-        <div  class="border-non-bottom h-500">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
-        </div>
-        <div class="border-non-bottom h-500">
-          <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
-        </div>
-      </v-col>
+  <v-container>
+    <v-btn :style="{ 'opacity': [ currentPage === 1 ?  0.2 : 1] }" variant="plain" :ripple="toggleRipple" icon="mdi-chevron-left" @click="clickPrevButton"></v-btn>
+    <template v-for="number in paginateNumbersList" :key="number">
+      <v-btn :variant="[number.id === currentPage ? 'tonal' : 'text']" class="px-0" @click="clickPageNumber(number)">{{ number.id }}</v-btn>
     </template>
-  </v-row>
+    <v-btn :style="{ 'opacity': [ currentPage === totalNumberOfPages ?  0.2 : 1] }" :ripple="toggleRipple" variant="plain" icon="mdi-chevron-right" @click="clickNextButton"></v-btn>
+  </v-container>
+  <div class="x-scroll">
+    <div class="w-1800 pa-3">
+      <template v-for="date in displayList" :key="date">
+        <div class="w-250 float-left">
+          <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-all minus-margin py-3">
+              <p>{{ date.date }}({{ date.weekday }})</p>
+          </div>
+          <div class="border-all minus-margin h-200">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">7:00</p>
+          </div>
+          <div  class="border-all minus-margin h-500">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">8:00</p>
+          </div>
+          <div  class="border-all minus-margin h-500">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">10:00</p>
+          </div>
+          <div  class="border-all minus-margin h-200">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">12:00</p>
+          </div>
+          <div  class="border-all minus-margin h-500">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">13:00</p>
+          </div>
+          <div  class="border-all minus-margin h-500">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">15:00</p>
+          </div>
+          <div class="border-all minus-margin h-500">
+            <p class="text-caption float-left pl-1 pt-1 text-grey-darken-3">17:00</p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+  <v-container>
+    <v-btn :style="{ 'opacity': [ currentPage === 1 ?  0.2 : 1] }" variant="plain" :ripple="toggleRipple" icon="mdi-chevron-left" @click="clickPrevButton"></v-btn>
+    <template v-for="number in paginateNumbersList" :key="number">
+      <v-btn :variant="[number.id === currentPage ? 'tonal' : 'text']" class="px-0" @click="clickPageNumber(number)">{{ number.id }}</v-btn>
+    </template>
+    <v-btn :style="{ 'opacity': [ currentPage === totalNumberOfPages ?  0.2 : 1] }" :ripple="toggleRipple" variant="plain" icon="mdi-chevron-right" @click="clickNextButton"></v-btn>
+  </v-container>
 </template>
 
 <style scoped>
-  .border-non-bottom {
+  .border-all {
     border: 1px solid #1565C0;
-    border-bottom: none;
-  }
-
-  .v-col div:last-child {
-    border-bottom: 1px solid #1565C0;
   }
 
   .h-200 {
@@ -94,4 +168,33 @@ onMounted(() => {
     height: 500px;
   }
 
+  .w-700 {
+    width: 700px;
+  }
+
+  .w-250 {
+    width: 250px;
+  }
+
+  /* .margin {
+    margin: 0 calc(50% - 50vw) 20px;
+  } */
+
+  .minus-margin {
+    margin-right: -1px;
+    margin-bottom: -1px;
+  }
+
+  .w-1800 {
+    width: 1800px;
+  }
+
+  .x-scroll {
+    overflow-x: scroll;
+    overflow-y: visible;
+  }
+
+  .float-left {
+    float: left;
+  }
 </style>
