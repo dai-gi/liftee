@@ -26,6 +26,6 @@ class Project < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["clients"]
+    ["clients", "sheet"]
   end
 end
