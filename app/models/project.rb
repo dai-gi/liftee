@@ -12,6 +12,7 @@
 
 class Project < ApplicationRecord
   belongs_to :client
+  has_many :sheet, dependent: :destroy
 
   enum status: { pending: 0, start: 1, end: 2 }
 
