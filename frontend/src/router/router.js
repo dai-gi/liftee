@@ -7,12 +7,10 @@ export const router = createRouter({
   routes: [
     {
       path: '/project-list',
-      name: 'project-list',
       component: ProjectList,
     },
     {
-      path: '/project-detail',
-      name: 'project-detail',
+      path: '/project-detail/:id',
       component: ProjectDetail,
     },
   ]

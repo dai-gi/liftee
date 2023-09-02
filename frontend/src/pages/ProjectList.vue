@@ -1,24 +1,45 @@
 <script setup>
-  import axios from 'axios';
   import { onMounted, ref } from 'vue';
+  import axios from 'axios';
 
+  const companies = ref([]);
   const clients = ref([]);
   const projects = ref([]);
+  const currentCompany = 'T.T.C 株式会社';
+  const companyId = ref(0);
 
-  onMounted(async () => {
+  const fetchData = async () => {
     try{
-      const res = await axios.get('http://localhost:3000/api/v1/client');
-      clients.value = res.data;
+      const companyResponse = await axios.get('http://localhost:3000/api/v1/company');
+      companies.value = companyResponse.data;
+      companies.value.forEach(company => {
+      if(company.name === currentCompany) {
+        companyId.value = company.id;
+      }
+    })
     } catch(error) {
-      console.log('Error: ', error);
+      console.log('会社情報の取得に失敗しました', error);
     }
 
     try{
-      const res = await axios.get('http://localhost:3000/api/v1/project');
-      projects.value = res.data;
+      const clientResponse = await axios.get(`http://localhost:3000/api/v1/company/${companyId.value}/client`);
+      clients.value = clientResponse.data;
     } catch(error) {
-      console.log('Error: ', error);
+      console.log('クライアント情報の取得に失敗しました', error);
     }
+
+    try{
+      for (const client of clients.value) {
+        const projectResponse = await axios.get(`http://localhost:3000/api/v1/company/:company_id/client/${client.id}/project`);
+        projects.value = projectResponse.data;
+      }
+    } catch(error) {
+      console.log('プロジェクト情報の取得に失敗しました', error);
+    }
+  }
+
+  onMounted(() => {
+    fetchData()
   });
 </script>
 
@@ -27,7 +48,7 @@
     <v-col v-for="client in clients" :key="client" cols="12" class="mb-5">
       <h3 class="d-flex flex-row ma-2">{{ client.name }}</h3>
       <template v-for="project in projects" :key="project">
-        <router-link to="/project-detail">
+        <router-link :to="'/project-detail/' + project.id">
           <template v-if="client.id === project.client_id">
             <v-card v-click-outside="onClickOutside" @click="active = true" :color="active ? 'grey-lighten-4' : undefined" :dark="active" class="d-flex align-center ma-3 pa-3 text-blue-darken-2" variant="outlined">
               <v-row>
