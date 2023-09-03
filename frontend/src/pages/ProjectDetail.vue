@@ -1,47 +1,38 @@
 <script setup>
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router'
 import { DateTime } from 'luxon';
 import axios from 'axios';
 
-const startDate = DateTime.fromSQL('2022-08-01');
-const endDate = DateTime.fromSQL('2022-09-01');
+// ======== 予定表 =========
 const dateAndWeekdayList = ref([]);
 const displayList = ref([]);
-const itemsPerPage = 7;
-const currentPage = ref(1);
-const paginateNumbersList = ref([]);
-const totalNumberOfPages = ref(0);
-const sheets = ref([])
-const companies = ref([]);
-const clients = ref([]);
-const projects = ref([]);
-const currentCompany = 'T.T.C 株式会社';
-const companyId = ref(0);
-
-const route = useRoute();
-const projectId = route.params.id;
-
-const currentSheets = ref([]);
-
 
 const getDates = (start_date, end_date) => {
+
   let currentDate = start_date;
   while(currentDate <= end_date) {
     dateAndWeekdayList.value.push({
-      date: currentDate.toFormat('M月d日'),
+      date: currentDate.toFormat('y年M月d日'),
       weekday: currentDate.setLocale('ja').toFormat('EEE')
     });
     currentDate = currentDate.plus({ days: 1 });
   }
+
   displayList.value = dateAndWeekdayList.value.slice(0, 7);
 }
 
+// ======== ページネーション =========
+const totalNumberOfPages = ref(0);
+const itemsPerPage = 7;
+const paginateNumbersList = ref([]);
+
 const paginateNumbers = () => {
   totalNumberOfPages.value = Math.ceil(dateAndWeekdayList.value.length / itemsPerPage);
+
   let num = 1;
   let startNumber = 0;
-  let endNumber= itemsPerPage;
+  let endNumber = itemsPerPage;
   while(paginateNumbersList.value.length < totalNumberOfPages.value) {
     paginateNumbersList.value.push({
       id: num,
@@ -50,27 +41,49 @@ const paginateNumbers = () => {
     })
     num++
     startNumber = endNumber
-    endNumber = endNumber + 7
+    endNumber = endNumber + itemsPerPage
   }
+
+  filterPaginateNumberList.value = paginateNumbersList.value.slice(startPageNumber, endPageNumber);
+}
+
+// ======== ページネーションボタン =========
+const currentPage = ref(1);
+const filterPaginateNumberList = ref([]);
+let startPageNumber = 0;
+let endPageNumber = 10;
+
+const increasePaginateNumberList = () => {
+  if(currentPage.value > endPageNumber) {
+    startPageNumber = endPageNumber;
+    endPageNumber += 10;
+  }
+  filterPaginateNumberList.value = paginateNumbersList.value.slice(startPageNumber, endPageNumber);
+}
+
+const diminishPaginateNumberList = () => {
+  if(currentPage.value < startPageNumber + 1) {
+    startPageNumber -= 10;
+    endPageNumber -= 10;
+  }
+  filterPaginateNumberList.value = paginateNumbersList.value.slice(startPageNumber, endPageNumber);
 }
 
 const clickPageNumber = (element) => {
   currentPage.value = element.id
-  for(let i = 0; i < paginateNumbersList.value.length; i++) {
-    if(paginateNumbersList.value[i].id == currentPage.value) {
-      displayList.value = dateAndWeekdayList.value.slice(element.startNumber, element.endNumber)
-    }
-  }
+  displayList.value = dateAndWeekdayList.value.slice(element.startNumber, element.endNumber)
+  console.log(currentPage.value)
 }
 
 const clickNextButton = () => {
-  currentPage.value = currentPage.value < totalNumberOfPages.value ? currentPage.value + 1 : 5
+  currentPage.value = currentPage.value < totalNumberOfPages.value ? currentPage.value + 1 : currentPage.value
   const paginateNumber = paginateNumbersList.value.find((element) => element.id === currentPage.value);
   for(let i = 0; i < paginateNumbersList.value.length; i++) {
     if(paginateNumbersList.value[i].id == currentPage.value) {
       displayList.value = dateAndWeekdayList.value.slice(paginateNumber.startNumber, paginateNumber.endNumber)
     }
   }
+  increasePaginateNumberList();
 }
 
 const clickPrevButton = () => {
@@ -81,6 +94,7 @@ const clickPrevButton = () => {
       displayList.value = dateAndWeekdayList.value.slice(paginateNumber.startNumber, paginateNumber.endNumber)
     }
   }
+  diminishPaginateNumberList();
 }
 
 const toggleRipple = computed(() => {
@@ -92,6 +106,18 @@ const toggleRipple = computed(() => {
     return true
   }
 })
+
+// ======== バックエンドからデータを取得 =========
+const currentCompany = 'T.T.C 株式会社';
+const companies = ref([]);
+const clients = ref([]);
+const projects = ref([]);
+const sheets = ref([]);
+const companyId = ref(0);
+const route = useRoute();
+const projectId = route.params.id;
+const currentSheets = ref([]);
+const currentProject = ref('');
 
 const fetchData = async () => {
     try{
@@ -118,6 +144,7 @@ const fetchData = async () => {
         const projectResponse = await axios.get(`http://localhost:3000/api/v1/company/:company_id/client/${client.id}/project`);
         projects.value = projectResponse.data;
       }
+      getCurrentProject();
     } catch(error) {
       console.log('プロジェクト情報の取得に失敗しました', error);
     }
@@ -139,16 +166,22 @@ const fetchData = async () => {
         currentSheets.value.push(sheet);
       }
     })
-    console.log(currentSheets.value)
   }
 
-  onBeforeMount(() => {
-    fetchData()
-  })
-
-  onMounted(() => {
+  const getCurrentProject = () => {
+    projects.value.forEach(project => {
+      if(projectId == project.id) {
+        currentProject.value = project;
+      }
+    });
+    const startDate = DateTime.fromSQL(currentProject.value.start_date);
+    const endDate = DateTime.fromSQL(currentProject.value.end_date);
     getDates(startDate, endDate),
     paginateNumbers()
+  }
+
+  onMounted(() => {
+    fetchData()
   })
 
 </script>
@@ -184,7 +217,7 @@ const fetchData = async () => {
     <template v-for="sheet in currentSheets" :key="sheet">
       <v-container>
         <v-btn :style="{ 'opacity': [ currentPage === 1 ?  0.2 : 1] }" variant="plain" :ripple="toggleRipple" icon="mdi-chevron-left" @click="clickPrevButton"></v-btn>
-        <template v-for="number in paginateNumbersList" :key="number">
+        <template v-for="number in filterPaginateNumberList" :key="number">
           <v-btn :variant="[number.id === currentPage ? 'tonal' : 'text']" class="px-0" @click="clickPageNumber(number)">{{ number.id }}</v-btn>
         </template>
         <v-btn :style="{ 'opacity': [ currentPage === totalNumberOfPages ?  0.2 : 1] }" :ripple="toggleRipple" variant="plain" icon="mdi-chevron-right" @click="clickNextButton"></v-btn>
@@ -367,7 +400,7 @@ const fetchData = async () => {
       </div>
       <v-container>
         <v-btn :style="{ 'opacity': [ currentPage === 1 ?  0.2 : 1] }" variant="plain" :ripple="toggleRipple" icon="mdi-chevron-left" @click="clickPrevButton"></v-btn>
-        <template v-for="number in paginateNumbersList" :key="number">
+        <template v-for="number in filterPaginateNumberList" :key="number">
           <v-btn :variant="[number.id === currentPage ? 'tonal' : 'text']" class="px-0" @click="clickPageNumber(number)">{{ number.id }}</v-btn>
         </template>
         <v-btn :style="{ 'opacity': [ currentPage === totalNumberOfPages ?  0.2 : 1] }" :ripple="toggleRipple" variant="plain" icon="mdi-chevron-right" @click="clickNextButton"></v-btn>
