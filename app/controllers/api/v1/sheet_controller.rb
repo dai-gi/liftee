@@ -1,7 +1,7 @@
 class Api::V1::SheetController < ApplicationController
   protect_from_forgery
 
-  before_action :set_project, only: [:show]
+  before_action :set_sheet, only: [:show, :destroy]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
     render json: { error: '404 not found' }, status: 404
@@ -25,9 +25,14 @@ class Api::V1::SheetController < ApplicationController
     render json: @sheet
   end
 
+  def destroy
+    @sheet.destroy!
+    head :no_content
+  end
+
   private
 
-    def set_project
+    def set_sheet
       @sheet = Sheet.find(params[:id])
     end
 
