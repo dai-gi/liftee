@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { DateTime } from 'luxon';
 import axios from 'axios';
 
@@ -133,27 +133,23 @@ const fetchData = async () => {
     }
 
     try{
-      const clientResponse = await axios.get(`http://localhost:3000/api/v1/company/${companyId.value}/client`);
+      const clientResponse = await axios.get(`http://localhost:3000/api/v1/client`);
       clients.value = clientResponse.data;
     } catch(error) {
       console.log('クライアント情報の取得に失敗しました', error);
     }
 
     try{
-      for (const client of clients.value) {
-        const projectResponse = await axios.get(`http://localhost:3000/api/v1/company/:company_id/client/${client.id}/project`);
-        projects.value = projectResponse.data;
-      }
+      const projectResponse = await axios.get(`http://localhost:3000/api/v1/project`);
+      projects.value = projectResponse.data;
       getCurrentProject();
     } catch(error) {
       console.log('プロジェクト情報の取得に失敗しました', error);
     }
 
     try{
-      for (const project of projects.value) {
-        const sheetResponse = await axios.get(`http://localhost:3000/api/v1/company/:company_id/client/:client_id/project/${project.id}/sheet`);
-        sheets.value = sheetResponse.data;
-      }
+      const sheetResponse = await axios.get(`http://localhost:3000/api/v1/sheet`);
+      sheets.value = sheetResponse.data;
       getSheets();
     } catch(error) {
       console.log('シート情報の取得に失敗しました', error);
@@ -180,6 +176,28 @@ const fetchData = async () => {
     paginateNumbers()
   }
 
+  // ======== シート追加ボタンのダイアログ =========
+  let sheetDialog = ref(false);
+  let taskDialog = ref(false);
+
+  // ======== シート追加機能 =========
+  const router = useRouter();
+  const sheetObj = ref({sheet: {
+    name: '',
+    project_id: projectId
+  }})
+
+  const createSheet = async () => {
+    try {
+      await axios.post('http://localhost:3000/api/v1/sheet', sheetObj.value);
+      sheetObj.value.sheet.name = '';
+      router.go(0)
+    } catch(error) {
+      console.log('シートの作成に失敗しました', error);
+    }
+  }
+
+  // ======== ライフサイクルフック =========
   onMounted(() => {
     fetchData()
   })
@@ -187,21 +205,90 @@ const fetchData = async () => {
 </script>
 
 <template>
-  <v-sheet class="d-flex justify-space-between">
-    <div class="d-flex align-center">
+  <v-sheet>
+    <v-container class="d-flex justify-end">
+      <div v-if="currentSheets.length !== 0">
+        <v-dialog v-model="sheetDialog">
+          <template v-slot:activator="{ props }">
+            <v-btn rounded="0" variant="tonal" v-bind="props" class="mr-3">
+              <p class="text-black">シート追加</p>
+            </v-btn>
+          </template>
+          <v-card width="500" class="mx-auto">
+            <v-form @submit.prevent="createSheet">
+              <v-card-text class="pb-0">
+                <v-container class="pb-0">
+                  <v-text-field label="シート名" required v-model="sheetObj.sheet.name"></v-text-field>
+                </v-container>
+              </v-card-text>
+              <v-card-actions class="d-flex justify-center">
+                <div>
+                  <v-btn type="submit" variant="text" color="black" block @click="sheetDialog = false">追加</v-btn>
+                </div>
+              </v-card-actions>
+            </v-form>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="taskDialog">
+          <template v-slot:activator="{ props }">
+            <v-btn rounded="0" variant="tonal" class="text-blue-darken-3" v-bind="props">
+              <p class="text-black">タスク追加</p>
+            </v-btn>
+          </template>
+          <v-card width="650" class="py-3 mx-auto">
+            <div class="d-flex justify-end mr-3">
+              <v-btn variant="text" icon="mdi-window-close" @click="taskDialog = false"></v-btn>
+            </div>
+            <v-card-text class="pb-0 px-15">
+              <v-container class="pb-0">
+                <v-form @submit.prevent="handleSubmit">
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field label="業者名" required class="mb-3"></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field label="作業内容" required class="mb-3"></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field label="作業場所" required class="mb-3"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-text-field label="開始時間" type="time" class="mb-3"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-text-field label="終了時間" type="time" class="mb-3"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-select label="車輌台数" :items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" class="mb-3"></v-select>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-textarea label="注意事項" class="mb-3"></v-textarea>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-select label="ステータス" :items="['未着手', '着手中', '完了']" class="mb-3"></v-select>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-container>
+            </v-card-text>
+            <v-card-actions class="d-flex justify-center">
+              <div>
+                <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="taskDialog = false">
+                  <p class="text-black">追加</p>
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </div>
+    </v-container>
+    <v-container class="d-flex align-center py-8 px-5">
       <template v-for="sheet in currentSheets" :key="sheet">
-        <v-btn rounded="0" class="text-blue-darken-3 mr-3" variant="outlined">
+        <v-btn rounded="0" class="text-blue-darken-4 mr-3" variant="outlined">
           <p class="text-caption text-black" >{{ sheet.name }}</p>
         </v-btn>
       </template>
-    </div>
-    <div v-if="currentSheets.length !== 0" class="d-flex align-center">
-      <v-btn variant="plain" icon="mdi-plus-circle-outline" size="x-large">
-        <template v-slot>
-          <v-icon color="blue-darken-4"></v-icon>
-        </template>
-      </v-btn>
-    </div>
+    </v-container>
   </v-sheet>
   <v-sheet class="d-flex justify-center align-center mt-10">
     <p class="text-h6 font-weight-bold">週間揚重予定表</p>

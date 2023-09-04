@@ -22,17 +22,15 @@
     }
 
     try{
-      const clientResponse = await axios.get(`http://localhost:3000/api/v1/company/${companyId.value}/client`);
+      const clientResponse = await axios.get(`http://localhost:3000/api/v1/client`);
       clients.value = clientResponse.data;
     } catch(error) {
       console.log('クライアント情報の取得に失敗しました', error);
     }
 
     try{
-      for (const client of clients.value) {
-        const projectResponse = await axios.get(`http://localhost:3000/api/v1/company/:company_id/client/${client.id}/project`);
-        projects.value = projectResponse.data;
-      }
+      const projectResponse = await axios.get(`http://localhost:3000/api/v1/project`);
+      projects.value = projectResponse.data;
     } catch(error) {
       console.log('プロジェクト情報の取得に失敗しました', error);
     }
