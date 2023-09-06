@@ -1,7 +1,7 @@
 class Api::V1::SheetController < ApplicationController
   protect_from_forgery
 
-  before_action :set_sheet, only: [:show, :destroy]
+  before_action :set_sheet, only: [:show, :update, :destroy]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
     render json: { error: '404 not found' }, status: 404
@@ -23,6 +23,14 @@ class Api::V1::SheetController < ApplicationController
 
   def show
     render json: @sheet
+  end
+
+  def update
+    if @sheet.update(sheet_params)
+      head :no_content
+    else
+      render json: { errors: @sheet.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def destroy

@@ -157,8 +157,6 @@ const fetchData = async () => {
       });
       currentSheet.value = currentProjectSheets[0];
       currentSheets.value = currentProjectSheets;
-      console.log(currentSheet.value)
-      console.log(currentSheets.value)
     } catch(error) {
       console.log('シート情報の取得に失敗しました', error);
     }
@@ -185,15 +183,16 @@ const fetchData = async () => {
 
   // ======== シート追加機能 =========
   const router = useRouter();
-  const sheetObj = ref({sheet: {
-    name: '',
-    project_id: projectId
-  }})
+  const sheetObj = ref({
+    sheet: {
+      name: '',
+      project_id: projectId
+    }
+  })
 
   const createSheet = async () => {
     try {
       await axios.post('http://localhost:3000/api/v1/sheet', sheetObj.value);
-      sheetObj.value.sheet.name = '';
       router.go(0)
     } catch(error) {
       console.log('シートの作成に失敗しました', error);
@@ -207,6 +206,16 @@ const fetchData = async () => {
       router.go(0)
     } catch(error) {
       console.log('シートの削除に失敗しました', error);
+    }
+  }
+
+  // ======== シート編集機能 =========
+  const updateSheet = async () => {
+    try {
+      await axios.patch(`http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`, {sheet: {name: currentSheet.value.name, project_id: projectId}});
+      router.go(0);
+    } catch(error) {
+      console.log('シートの編集に失敗しました', error);
     }
   }
 
@@ -261,12 +270,12 @@ const fetchData = async () => {
                   <v-form @submit.prevent="editSheet">
                     <v-card-text class="pb-0">
                       <v-container class="pb-0">
-                        <v-text-field label="シート名" required v-model="sheetObj.sheet.name"></v-text-field>
+                        <v-text-field label="シート名" required v-model="currentSheet.name"></v-text-field>
                       </v-container>
                     </v-card-text>
                     <v-card-actions class="d-flex justify-center pb-5">
                       <div>
-                        <v-btn type="submit" variant="text" color="black" block @click="editSheetDialog = false">追加</v-btn>
+                        <v-btn type="submit" variant="text" color="black" block @click="updateSheet">編集</v-btn>
                       </div>
                     </v-card-actions>
                   </v-form>
