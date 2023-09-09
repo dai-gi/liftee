@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_08_221750) do
+ActiveRecord::Schema.define(version: 2023_09_09_090429) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -74,14 +74,13 @@ ActiveRecord::Schema.define(version: 2023_09_08_221750) do
     t.string "vehicles", null: false
     t.string "notes"
     t.integer "status", default: 0, null: false
-    t.integer "sheet_id_id", null: false
+    t.integer "sheet_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["sheet_id_id"], name: "index_tasks_on_sheet_id_id"
+    t.index ["sheet_id"], name: "index_tasks_on_sheet_id"
   end
 
   add_foreign_key "clients", "companies"
   add_foreign_key "projects", "clients"
   add_foreign_key "sheets", "projects"
-  add_foreign_key "tasks", "sheet_ids"
 end
