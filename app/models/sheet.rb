@@ -1,5 +1,6 @@
 class Sheet < ApplicationRecord
   belongs_to :project
+  has_many :task, dependent: :destroy
 
   validates :name, presence: true
 
