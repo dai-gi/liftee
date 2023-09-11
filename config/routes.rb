@@ -6,7 +6,7 @@ Rails.application.routes.draw do
       resources :client, only: [:index, :show]
       resources :project, only: [:index, :show]
       resources :sheet, only: [:index, :show, :create, :destroy, :update]
-      resources :task, only: [:index, :show]
+      resources :task, only: [:index, :show, :create]
     end
   end
 end

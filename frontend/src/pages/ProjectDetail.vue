@@ -3,6 +3,24 @@ import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import { DateTime } from 'luxon';
 import axios from 'axios';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+
+
+
+const taskObj = ref({
+  task: {
+    trader_name: '',
+    name: '',
+    work_place: '',
+    start_datetime: '',
+    end_datetime: '',
+    vehicles: '',
+    notes: '',
+    status: '',
+    sheet_id: 3
+  }
+})
 
 // ======== 予定表 =========
 const dateAndWeekdayList = ref([]);
@@ -118,8 +136,11 @@ const route = useRoute();
 const projectId = route.params.id;
 const currentSheets = ref([]);
 const currentProject = ref('');
+const tasks = ref([]);
 
 const fetchData = async () => {
+
+    // 会社情報
     try{
       const companyResponse = await axios.get('http://localhost:3000/api/v1/company');
       companies.value = companyResponse.data;
@@ -132,6 +153,7 @@ const fetchData = async () => {
       console.log('会社情報の取得に失敗しました', error);
     }
 
+    // クライアント情報
     try{
       const clientResponse = await axios.get(`http://localhost:3000/api/v1/client`);
       clients.value = clientResponse.data;
@@ -139,6 +161,7 @@ const fetchData = async () => {
       console.log('クライアント情報の取得に失敗しました', error);
     }
 
+    // プロジェクト情報
     try{
       const projectResponse = await axios.get(`http://localhost:3000/api/v1/project`);
       projects.value = projectResponse.data;
@@ -147,6 +170,7 @@ const fetchData = async () => {
       console.log('プロジェクト情報の取得に失敗しました', error);
     }
 
+    // シート情報
     try{
       const sheetResponse = await axios.get(`http://localhost:3000/api/v1/sheet`);
       const currentProjectSheets = [];
@@ -159,6 +183,14 @@ const fetchData = async () => {
       currentSheets.value = currentProjectSheets;
     } catch(error) {
       console.log('シート情報の取得に失敗しました', error);
+    }
+
+    // タスク情報
+    try{
+      const taskResponse = await axios.get(`http://localhost:3000/api/v1/task`);
+      tasks.value = taskResponse.data;
+    } catch(error) {
+      console.log('タスク情報の取得に失敗しました', error);
     }
   }
 
@@ -174,12 +206,10 @@ const fetchData = async () => {
     paginateNumbers()
   }
 
-  // ======== シート追加ボタンのダイアログ =========
+  // ======== シートボタンのダイアログ =========
   let createSheetDialog = ref(false);
   let editSheetDialog = ref(false);
   let deleteSheetDialog = ref(false);
-
-  let taskDialog = ref(false);
 
   // ======== シート追加機能 =========
   const router = useRouter();
@@ -218,6 +248,25 @@ const fetchData = async () => {
       console.log('シートの編集に失敗しました', error);
     }
   }
+
+
+  // ======== タスク追加機能 =========
+  const createTask = async () => {
+    taskObj.value.task.sheet_id = currentSheet.value.id
+    try {
+      await axios.post('http://localhost:3000/api/v1/task', taskObj.value);
+      router.go(0)
+    } catch(error) {
+      console.log('シートの作成に失敗しました', error);
+    }
+  }
+
+
+  // ======== タスクボタンのダイアログ =========
+  let taskDialog = ref(false);
+  let editTaskDialog = ref(false);
+  let deleteTaskDialog = ref(false);
+
 
   // ======== ライフサイクルフック =========
   onMounted(() => {
@@ -304,7 +353,7 @@ const fetchData = async () => {
         </v-menu>
         <v-dialog v-model="taskDialog">
           <template v-slot:activator="{ props }">
-            <v-btn rounded="0" variant="tonal" class="text-blue-darken-3" v-bind="props">
+            <v-btn rounded="0" variant="tonal" class="ma-0 text-blue-darken-3" v-bind="props">
               <p class="text-black">タスク追加</p>
             </v-btn>
           </template>
@@ -314,31 +363,31 @@ const fetchData = async () => {
             </div>
             <v-card-text class="pb-0 px-15">
               <v-container class="pb-0">
-                <v-form @submit.prevent="handleSubmit">
+                <v-form @submit.prevent="createTask">
                   <v-row>
                     <v-col cols="12">
-                      <v-text-field label="業者名" required class="mb-3"></v-text-field>
+                      <v-text-field label="業者名" required v-model="taskObj.task.trader_name" class="mb-3"></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-text-field label="作業内容" required class="mb-3"></v-text-field>
+                      <v-text-field label="作業内容" required v-model="taskObj.task.name" class="mb-3"></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-text-field label="作業場所" required class="mb-3"></v-text-field>
+                      <v-text-field label="作業場所" required v-model="taskObj.task.work_place" class="mb-3"></v-text-field>
                     </v-col>
                     <v-col cols="6">
-                      <v-text-field label="開始時間" type="time" class="mb-3"></v-text-field>
+                      <VueDatePicker locale="jp" v-model="taskObj.task.start_datetime"></VueDatePicker>
                     </v-col>
                     <v-col cols="6">
-                      <v-text-field label="終了時間" type="time" class="mb-3"></v-text-field>
+                      <VueDatePicker locale="jp" v-model="taskObj.task.end_datetime"></VueDatePicker>
                     </v-col>
                     <v-col cols="6">
-                      <v-select label="車輌台数" :items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" class="mb-3"></v-select>
+                      <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="taskObj.task.vehicles" class="mb-3"></v-select>
                     </v-col>
                     <v-col cols="12">
-                      <v-textarea label="注意事項" class="mb-3"></v-textarea>
+                      <v-textarea label="注意事項" v-model="taskObj.task.notes" class="mb-3"></v-textarea>
                     </v-col>
                     <v-col cols="6">
-                      <v-select label="ステータス" :items="['未着手', '着手中', '完了']" class="mb-3"></v-select>
+                      <v-select label="ステータス" :items='[0, 1, 2]' v-model="taskObj.task.status" class="mb-3"></v-select>
                     </v-col>
                   </v-row>
                 </v-form>
@@ -346,7 +395,7 @@ const fetchData = async () => {
             </v-card-text>
             <v-card-actions class="d-flex justify-center">
               <div>
-                <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="taskDialog = false">
+                <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="createTask">
                   <p class="text-black">追加</p>
                 </v-btn>
               </div>
@@ -389,26 +438,26 @@ const fetchData = async () => {
             <p class="text-h6">{{ currentSheet.name }}</p>
           </v-sheet>
           <template v-for="date in displayList" :key="date">
-            <div class="w-250 float-left">
-              <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-all minus-margin py-3">
+            <div class="w-250 float-left mr">
+              <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-all minus-margin py-3 mb">
                   <p>{{ date.date }}({{ date.weekday }})</p>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">7:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour === 7">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour === 7">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -416,22 +465,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">8:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 8 && DateTime.fromSQL(task.start_datetime).hour < 10">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour >= 8 && DateTime.fromISO(task.start_datetime).hour < 10">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -439,22 +488,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">10:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 10 && DateTime.fromSQL(task.start_datetime).hour < 12">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour >= 10 && DateTime.fromISO(task.start_datetime).hour < 12">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -462,22 +511,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">12:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour === 12">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour === 12">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -485,22 +534,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">13:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 13 && DateTime.fromSQL(task.start_datetime).hour < 15">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour >= 13 && DateTime.fromISO(task.start_datetime).hour < 15">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -508,22 +557,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">15:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 15 && DateTime.fromSQL(task.start_datetime).hour < 17">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour >= 15 && DateTime.fromISO(task.start_datetime).hour < 17">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -531,22 +580,22 @@ const fetchData = async () => {
                   </template>
                 </template>
               </div>
-              <div class="border-all minus-margin h-800 pa-2">
+              <div class="border-all minus-margin h-800 pa-2 mb">
                 <p class="text-caption text-left text-grey-darken-3 mb-2">17:00</p>
                 <template v-for="task in tasks" :key="task">
-                  <template v-if="DateTime.fromSQL(task.start_datetime).toFormat('M月d日') === date.date">
-                    <template v-if="DateTime.fromSQL(task.start_datetime).hour >= 17">
+                  <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
+                    <template v-if="DateTime.fromISO(task.start_datetime).hour >= 17">
                       <router-link to="/project-detail">
                         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
                           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
                           <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromSQL(task.start_datetime).toFormat('H:m') }}〜</p>
+                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
                             <p>{{ task.work_place }} {{ task.name }}</p>
                             <p>{{ task.vehicles }}</p>
                             <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 1" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 2" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 3" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
                           </div>
                         </v-card>
                       </router-link>
@@ -574,6 +623,14 @@ const fetchData = async () => {
     border: 1px solid #1565C0;
   }
 
+  .mr {
+    margin-right: 3px;
+  }
+
+  .mb {
+    margin-bottom: 3px;
+  }
+
   .h-400 {
     height: 400px;
   }
@@ -593,11 +650,6 @@ const fetchData = async () => {
 
   .w-250 {
     width: 250px;
-  }
-
-  .minus-margin {
-    margin-right: -1px;
-    margin-bottom: -1px;
   }
 
   .w-1800 {
