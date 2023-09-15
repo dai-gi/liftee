@@ -1,7 +1,7 @@
 class Api::V1::TaskController < ApplicationController
   protect_from_forgery
 
-  before_action :set_task, only: [:show]
+  before_action :set_task, only: [:show, :update]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
     render json: { error: '404 not found' }, status: 404
@@ -24,6 +24,14 @@ class Api::V1::TaskController < ApplicationController
 
   def show
     render json: @task
+  end
+
+  def update
+    if @task.update(task_params)
+      head :no_content
+    else
+      render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   private

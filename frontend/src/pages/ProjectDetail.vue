@@ -6,7 +6,16 @@ import axios from 'axios';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
+const dialog = ref(false);
+const dialogSeven = ref(false);
+const dialogEight = ref(false);
+const dialogTen = ref(false);
+const dialogTwelve = ref(false);
+const dialogThirteen = ref(false);
+const dialogFifteen = ref(false);
+const dialogSeventeen = ref(false);
 
+let currentTask = null;
 
 const taskObj = ref({
   task: {
@@ -21,6 +30,8 @@ const taskObj = ref({
     sheet_id: 3
   }
 })
+
+const currentTaskId = ref(0);
 
 // ======== 予定表 =========
 const dateAndWeekdayList = ref([]);
@@ -242,7 +253,15 @@ const fetchData = async () => {
   // ======== シート編集機能 =========
   const updateSheet = async () => {
     try {
-      await axios.patch(`http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`, {sheet: {name: currentSheet.value.name, project_id: projectId}});
+      await axios.patch(
+        `http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`,
+        {
+          sheet: {
+            name: currentSheet.value.name,
+            project_id: projectId
+          }
+        }
+      );
       router.go(0);
     } catch(error) {
       console.log('シートの編集に失敗しました', error);
@@ -257,16 +276,38 @@ const fetchData = async () => {
       await axios.post('http://localhost:3000/api/v1/task', taskObj.value);
       router.go(0)
     } catch(error) {
-      console.log('シートの作成に失敗しました', error);
+      console.log('タスクの作成に失敗しました', error);
     }
   }
 
+  // ======== タスク編集機能 =========
+  const getCurrentTask = (task) => {
+    currentTaskId.value = task.id
+    currentTask = task
+  }
 
-  // ======== タスクボタンのダイアログ =========
-  let taskDialog = ref(false);
-  let editTaskDialog = ref(false);
-  let deleteTaskDialog = ref(false);
-
+  const editTask = async () => {
+    try {
+      await axios.patch(
+        `http://localhost:3000/api/v1/task/${currentTaskId.value}`,
+        {
+          task: {
+            trader_name: currentTask.trader_name,
+            name: currentTask.name,
+            work_place: currentTask.work_place,
+            start_datetime: currentTask.start_datetime,
+            end_datetime: currentTask.end_datetime,
+            vehicles: currentTask.vehicles,
+            notes: currentTask.notes,
+            status: currentTask.status
+          }
+        }
+        );
+      router.go(0);
+    } catch(error) {
+      console.log('シートの編集に失敗しました', error);
+    }
+  }
 
   // ======== ライフサイクルフック =========
   onMounted(() => {
@@ -275,6 +316,11 @@ const fetchData = async () => {
 </script>
 
 <template>
+  <template v-for="task in tasks" :key="task">
+    <p>{{ task }}</p>
+  </template>
+  <p>{{ currentTaskId }}</p>
+  <p>{{ currentTask }}</p>
   <v-sheet>
     <v-container class="d-flex justify-end">
       <div v-if="currentSheets.length !== 0">
@@ -286,7 +332,7 @@ const fetchData = async () => {
           </template>
           <v-list>
             <v-list-item>
-              <v-dialog v-model="createSheetDialog">
+              <v-dialog  close-on-content-click>
                 <template v-slot:activator="{ props }">
                   <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props">
                     追加
@@ -301,7 +347,7 @@ const fetchData = async () => {
                     </v-card-text>
                     <v-card-actions class="d-flex justify-center pb-5">
                       <div>
-                        <v-btn type="submit" variant="text" color="black" block @click="createSheetDialog = false">追加</v-btn>
+                        <v-btn type="submit" variant="text" color="black" block>追加</v-btn>
                       </div>
                     </v-card-actions>
                   </v-form>
@@ -309,7 +355,7 @@ const fetchData = async () => {
               </v-dialog>
             </v-list-item>
             <v-list-item>
-              <v-dialog v-model="editSheetDialog">
+              <v-dialog  close-on-content-click>
                 <template v-slot:activator="{ props }">
                   <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props">
                     編集
@@ -332,7 +378,7 @@ const fetchData = async () => {
               </v-dialog>
             </v-list-item>
             <v-list-item>
-              <v-dialog v-model="deleteSheetDialog">
+              <v-dialog  close-on-content-click>
                 <template v-slot:activator="{ props }">
                   <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props">
                     削除
@@ -342,7 +388,7 @@ const fetchData = async () => {
                   <v-card-text class="text-center">本当に削除してよろしいですか？</v-card-text>
                   <v-card-actions class="d-flex justify-center pb-5">
                     <div class="d-flex justify-center">
-                      <v-btn class="pa-0 ma-0" type="submit" variant="tonal" color="black" block @click="deleteSheetDialog = false">キャンセル</v-btn>
+                      <v-btn class="pa-0 ma-0" type="submit" variant="tonal" color="black" block>キャンセル</v-btn>
                       <v-btn class="pa-0 ma-0 ml-3" type="submit" variant="tonal" color="red-darken-2" block @click="deleteSheet">削除</v-btn>
                     </div>
                   </v-card-actions>
@@ -351,7 +397,7 @@ const fetchData = async () => {
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-dialog v-model="taskDialog">
+        <v-dialog v-model="dialog">
           <template v-slot:activator="{ props }">
             <v-btn rounded="0" variant="tonal" class="ma-0 text-blue-darken-3" v-bind="props">
               <p class="text-black">タスク追加</p>
@@ -359,7 +405,7 @@ const fetchData = async () => {
           </template>
           <v-card width="650" class="py-3 mx-auto">
             <div class="d-flex justify-end mr-3">
-              <v-btn variant="text" icon="mdi-window-close" @click="taskDialog = false"></v-btn>
+              <v-btn variant="text" icon="mdi-window-close" @click="dialog = false"></v-btn>
             </div>
             <v-card-text class="pb-0 px-15">
               <v-container class="pb-0">
@@ -447,20 +493,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour === 7">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogSeven">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogSeven = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -470,20 +564,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour >= 8 && DateTime.fromISO(task.start_datetime).hour < 10">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogEight">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogEight = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -493,20 +635,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour >= 10 && DateTime.fromISO(task.start_datetime).hour < 12">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogTen">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogTen = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -516,20 +706,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour === 12">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogTwelve">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogTwelve = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -539,20 +777,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour >= 13 && DateTime.fromISO(task.start_datetime).hour < 15">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogThirteen">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="editTaskDialog = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -562,20 +848,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour >= 15 && DateTime.fromISO(task.start_datetime).hour < 17">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogFifteen">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogFifteen = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
@@ -585,20 +919,68 @@ const fetchData = async () => {
                 <template v-for="task in tasks" :key="task">
                   <template v-if="DateTime.fromISO(task.start_datetime).toFormat('y年M月d日') === date.date">
                     <template v-if="DateTime.fromISO(task.start_datetime).hour >= 17">
-                      <router-link to="/project-detail">
-                        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-                          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-                          <div class="text-body-2 pa-2 text-grey-darken-2">
-                            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-                            <p>{{ task.work_place }} {{ task.name }}</p>
-                            <p>{{ task.vehicles }}</p>
-                            <p>{{ task.notes }}</p>
-                            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-                            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-                            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                      <v-dialog v-model="dialogSeventeen">
+                        <template v-slot:activator="{ props }">
+                          <v-sheet @click="getCurrentTask(task)" v-bind="props">
+                            <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
+                              <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
+                              <div class="text-body-2 pa-2 text-grey-darken-2">
+                                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+                                <p>{{ task.work_place }} {{ task.name }}</p>
+                                <p>{{ task.vehicles }}台</p>
+                                <p>{{ task.notes }}</p>
+                                <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
+                                <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
+                                <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+                              </div>
+                            </v-card>
+                          </v-sheet>
+                        </template>
+                        <v-card width="650" class="py-3 mx-auto">
+                          <div class="d-flex justify-end mr-3">
+                            <v-btn variant="text" icon="mdi-window-close" @click="dialogSeventeen = false"></v-btn>
                           </div>
+                          <v-card-text class="pb-0 px-15">
+                            <v-container class="pb-0">
+                              <v-form @submit.prevent="editTask">
+                                <v-row>
+                                  <v-col cols="12">
+                                    <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.start_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <VueDatePicker locale="jp" v-model="currentTask.end_datetime"></VueDatePicker>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="車輌台数" :items='["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]'  v-model="currentTask.vehicles" class="mb-3"></v-select>
+                                  </v-col>
+                                  <v-col cols="12">
+                                    <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                                  </v-col>
+                                  <v-col cols="6">
+                                    <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                                  </v-col>
+                                </v-row>
+                              </v-form>
+                            </v-container>
+                          </v-card-text>
+                          <v-card-actions class="d-flex justify-center">
+                            <div>
+                              <v-btn type="submit" variant="tonal" color="blue-darken-3" block @click="editTask">
+                                <p class="text-black">編集</p>
+                              </v-btn>
+                            </div>
+                          </v-card-actions>
                         </v-card>
-                      </router-link>
+                      </v-dialog>
                     </template>
                   </template>
                 </template>
