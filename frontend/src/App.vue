@@ -30,7 +30,7 @@
   </v-app>
 </template>
 
-<style>
+<style scoped>
   .project-list:hover {
     opacity: 0.7;
   }
