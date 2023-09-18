@@ -132,7 +132,7 @@
       <div v-if="currentSheets.length !== 0">
         <v-menu transition="scale-transition">
           <template v-slot:activator="{ props }">
-            <v-btn size="x-large" variant="outlined" class="mr-3 text-blue-darken-4 text-h4" icon="mdi-plus" v-bind="props"></v-btn>
+            <v-btn variant="outlined" class="mr-3 text-blue-darken-4 text-h5" icon="mdi-plus" v-bind="props"></v-btn>
           </template>
           <v-list>
             <v-list-item>
@@ -216,57 +216,57 @@
     <v-container class="d-flex align-center py-8 px-0">
       <template v-for="sheet in currentSheets" :key="sheet">
         <div class="relative-item mr-5">
-          <v-btn rounded="0" class="text-blue-darken-4 relative-item px-2" variant="outlined" @click="currentSheet = sheet">
-            <p class="text-black" >{{ sheet.name }}</p>
-          </v-btn>
-          <v-menu transition="scale-transition">
-            <template v-slot:activator="{ props }">
-              <v-btn  v-bind="props" size="x-small" icon="mdi-information-outline" class="text-overline absolute-item text-blue-darken-4" variant="text" @click="currentSheet = sheet"></v-btn>
-            </template>
-            <v-list>
+          <v-btn rounded="0" class="d-flex pl-5 pr-0" variant="outlined" @click="currentSheet = sheet">
+            <p>{{ sheet.name }}</p>
+            <v-menu transition="scale-transition">
+              <template v-slot:activator="{ props }">
+                <v-btn  v-bind="props" icon="mdi-information-outline" class="text-caption text-grey-darken-1" variant="text" @click="currentSheet = sheet"></v-btn>
+              </template>
+              <v-list>
+                <v-list-item>
+                <v-dialog v-model="editSheetDialog">
+                  <template v-slot:activator="{ props }">
+                    <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props" color="yellow-darken-4">
+                      編集
+                    </v-btn>
+                  </template>
+                  <v-card width="500" class="mx-auto">
+                    <v-form @submit.prevent="editSheet">
+                      <v-card-text class="pb-0">
+                        <v-container class="pb-0">
+                          <v-text-field label="シート名" required v-model="currentSheet.name"></v-text-field>
+                        </v-container>
+                      </v-card-text>
+                      <v-card-actions class="d-flex justify-center pb-5">
+                        <div>
+                          <v-btn type="submit" variant="text" color="black" block @click="updateSheet">編集</v-btn>
+                        </div>
+                      </v-card-actions>
+                    </v-form>
+                  </v-card>
+                </v-dialog>
+              </v-list-item>
               <v-list-item>
-              <v-dialog v-model="editSheetDialog">
-                <template v-slot:activator="{ props }">
-                  <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props">
-                    編集
-                  </v-btn>
-                </template>
-                <v-card width="500" class="mx-auto">
-                  <v-form @submit.prevent="editSheet">
-                    <v-card-text class="pb-0">
-                      <v-container class="pb-0">
-                        <v-text-field label="シート名" required v-model="currentSheet.name"></v-text-field>
-                      </v-container>
-                    </v-card-text>
+                <v-dialog v-model="deleteSheetDialog">
+                  <template v-slot:activator="{ props }">
+                    <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props" color="red-darken-4">
+                      削除
+                    </v-btn>
+                  </template>
+                  <v-card width="500" class="mx-auto">
+                    <v-card-text class="text-center">{{ currentSheet.name }}シートを削除してよろしいですか？</v-card-text>
                     <v-card-actions class="d-flex justify-center pb-5">
-                      <div>
-                        <v-btn type="submit" variant="text" color="black" block @click="updateSheet">編集</v-btn>
+                      <div class="d-flex justify-center">
+                        <v-btn class="pa-0 ma-0" type="submit" variant="tonal" color="black" block @click="deleteSheetDialog = false">キャンセル</v-btn>
+                        <v-btn class="pa-0 ma-0 ml-3" type="submit" variant="tonal" color="red-darken-2" block @click="deleteSheet">削除</v-btn>
                       </div>
                     </v-card-actions>
-                  </v-form>
-                </v-card>
-              </v-dialog>
-            </v-list-item>
-            <v-list-item>
-              <v-dialog v-model="deleteSheetDialog">
-                <template v-slot:activator="{ props }">
-                  <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props">
-                    削除
-                  </v-btn>
-                </template>
-                <v-card width="500" class="mx-auto">
-                  <v-card-text class="text-center">{{ currentSheet.name }}シートを削除してよろしいですか？</v-card-text>
-                  <v-card-actions class="d-flex justify-center pb-5">
-                    <div class="d-flex justify-center">
-                      <v-btn class="pa-0 ma-0" type="submit" variant="tonal" color="black" block @click="deleteSheetDialog = false">キャンセル</v-btn>
-                      <v-btn class="pa-0 ma-0 ml-3" type="submit" variant="tonal" color="red-darken-2" block @click="deleteSheet">削除</v-btn>
-                    </div>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-list-item>
-            </v-list>
-          </v-menu>
+                  </v-card>
+                </v-dialog>
+              </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
         </div>
       </template>
     </v-container>
@@ -276,15 +276,3 @@
   </v-sheet>
   <Schedule :sheet="currentSheet" />
 </template>
-
-<style scoped>
-.relative-item {
-  position: relative;
-}
-
-.absolute-item {
-  position: absolute;
-  top: -22px;
-  right: -15px;
-}
-</style>

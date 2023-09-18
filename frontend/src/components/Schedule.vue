@@ -228,7 +228,7 @@
           </v-sheet>
           <template v-for="date in displayList" :key="date">
             <div class="w-250 float-left mr">
-              <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : 'white' ] ] }" class="border-all minus-margin py-3 mb">
+              <div :style="{ 'background-color': [ date.weekday === '土' ? '#448AFF' : [ date.weekday === '日' ? '#E57373' : '#EEEEEE' ] ] }" class="border-all minus-margin py-3 mb">
                   <p>{{ date.date }}({{ date.weekday }})</p>
               </div>
               <div class="border-all minus-margin h-800 pa-2 mb">

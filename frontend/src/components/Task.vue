@@ -29,6 +29,7 @@
 
   // ダイアログ
   const dialog = ref(false);
+  const deleteTaskDialog = ref(false);
 
 
   // タスク情報を取得
@@ -63,6 +64,15 @@
       console.log('シートの編集に失敗しました', error);
     }
   }
+  // タスク情報削除
+  async function deleteTask() {
+    try {
+      await axios.delete(`http://localhost:3000/api/v1/task/${currentTaskId.value}`);
+      router.go(0)
+    } catch(error) {
+      console.log('タスクの削除に失敗しました', error);
+    }
+  }
   // 選択したタスク情報を取得
   function getCurrentTask(task) {
     currentTaskId.value = task.id
@@ -82,13 +92,13 @@
         <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
           <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
           <div class="text-body-2 pa-2 text-grey-darken-2">
-            <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+            <p class="mt-1">{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
             <p>{{ task.work_place }} {{ task.name }}</p>
             <p>{{ task.vehicles }}</p>
-            <p>{{ task.notes }}</p>
-            <v-chip v-if="task.status === 'pending'" class="mt-2" size="small" label color="red-darken-4">未着手</v-chip>
-            <v-chip v-if="task.status === 'start'" class="mt-2" size="small" label color="yellow-darken-4">着手中</v-chip>
-            <v-chip v-if="task.status === 'end'" class="mt-2" size="small" label color="blue-darken-4">完了</v-chip>
+            <p class="text-red">{{ task.notes }}</p>
+            <v-chip v-if="task.status === 'pending'" class="my-2 px-15" size="small" label color="red-darken-4">未着手</v-chip>
+            <v-chip v-if="task.status === 'start'" class="my-2 px-15" size="small" label color="yellow-darken-4">着手中</v-chip>
+            <v-chip v-if="task.status === 'end'" class="my-2 px-15" size="small" label color="blue-darken-4">完了</v-chip>
           </div>
         </v-card>
       </v-sheet>
@@ -132,6 +142,22 @@
       <v-card-actions class="d-flex justify-center mt-10 mb-5">
         <div class="mr-5">
           <v-btn class="px-5" type="submit" variant="tonal" color="yellow-darken-4" block @click="editTask">編集</v-btn>
+        </div>
+        <div class="mr-5">
+          <v-dialog v-model="deleteTaskDialog">
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props" class="px-5" type="submit" variant="tonal" color="red-darken-2" block>削除</v-btn>
+            </template>
+            <v-card width="500" class="mx-auto">
+              <v-card-text class="text-center">本当に削除してよろしいですか？</v-card-text>
+              <v-card-actions class="d-flex justify-center pb-5">
+                <div class="d-flex justify-center">
+                  <v-btn class="pa-0 ma-0" type="submit" variant="tonal" color="black" block @click="deleteTaskDialog = false">キャンセル</v-btn>
+                  <v-btn class="pa-0 ma-0 ml-3" type="submit" variant="tonal" color="red-darken-2" block @click="deleteTask">削除</v-btn>
+                </div>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </div>
       </v-card-actions>
     </v-card>
