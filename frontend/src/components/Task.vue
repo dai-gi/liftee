@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
 
   // Router
   import { useRouter } from 'vue-router'
@@ -30,6 +30,7 @@
   // ダイアログ
   const dialog = ref(false);
   const deleteTaskDialog = ref(false);
+  const notesDialog = ref(false);
 
 
   // タスク情報を取得
@@ -55,10 +56,10 @@
             end_datetime: currentTask.value.end_datetime,
             vehicles: currentTask.value.vehicles,
             notes: currentTask.value.notes,
-            status: currentTask.value.status
+            status: currentTask.value.status === '完了' ? 2 : currentTask.value.status === '着手中' ? 1 : 0
           }
         }
-        );
+      );
       router.go(0);
     } catch(error) {
       console.log('シートの編集に失敗しました', error);
@@ -77,8 +78,14 @@
   function getCurrentTask(task) {
     currentTaskId.value = task.id
     currentTask.value = {...task}
+    if( currentTask.value.status === 'end' ) {
+      currentTask.value.status = '完了'
+    } else if ( currentTask.value.status === 'start' ) {
+      currentTask.value.status = '着手中'
+    } else {
+      currentTask.value.status = '未着手'
+    }
   }
-
 
   onMounted(() => {
     fetchTaskData()
@@ -89,16 +96,35 @@
   <v-dialog v-model="dialog">
     <template v-slot:activator="{ props }">
       <v-sheet @click="getCurrentTask(task)" v-bind="props">
-        <v-card variant="outlined" class="text-grey-lighten-1 mb-2" @click="active = true" v-click-outside="onClickOutside">
-          <p class="text-body-2 text-grey-darken-2 bg-grey-lighten-2 pa-1">{{ task.trader_name }}</p>
-          <div class="text-body-2 pa-2 text-grey-darken-2">
-            <p class="mt-1">{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
-            <p>{{ task.work_place }} {{ task.name }}</p>
-            <p>{{ task.vehicles }}</p>
-            <p class="text-red">{{ task.notes }}</p>
-            <v-chip v-if="task.status === 'pending'" class="my-2 px-15" size="small" label color="red-darken-4">未着手</v-chip>
-            <v-chip v-if="task.status === 'start'" class="my-2 px-15" size="small" label color="yellow-darken-4">着手中</v-chip>
-            <v-chip v-if="task.status === 'end'" class="my-2 px-15" size="small" label color="blue-darken-4">完了</v-chip>
+        <v-card variant="outlined"  :style="{ 'opacity': [ task.status === 'end' ?  0.6 : 1] }" :class="{'text-grey-lighten-1 mb-2': task.status === 'pending', 'text-blue-lighten-4 mb-2': task.status === 'start', 'text-blue-darken-1 mb-2': task.status === 'end'}" @click="active = true" v-click-outside="onClickOutside">
+          <p class="text-body-2 pa-1"  :class="{'bg-grey-lighten-1 text-grey-darken-2': task.status === 'pending', 'bg-blue-lighten-1 text-white': task.status === 'start', 'bg-blue-darken-2 text-white': task.status === 'end'}">
+            {{ task.trader_name }}
+          </p>
+          <div class="py-2">
+            <div class="text-body-2 pa-2 text-grey-darken-2">
+              <div class="d-flex align-center justify-center relative pb-1">
+                <v-icon v-if="task.status === 'pending'" class="absolute status" color="grey-lighten-1" icon="mdi-checkbox-blank-circle-outline"></v-icon>
+                <v-icon v-if="task.status === 'start'" class="absolute status" color="blue-lighten-1" icon="mdi-check-circle-outline"></v-icon>
+                <v-icon v-if="task.status === 'end'" class="absolute status text-" color="blue-darken-2" icon="mdi-check-circle"></v-icon>
+                <v-dialog v-model="notesDialog">
+                  <template v-slot:activator="{ props }">
+                    <v-btn v-if="task.notes" v-bind="props" class="text-subtitle-2 absolute notes text-red-darken-4" variant="text" icon="mdi-alert-circle-outline"></v-btn>
+                  </template>
+                  <v-card width="500" class="mx-auto">
+                    <v-card-text class="text-center pa-10">{{ task.notes }}</v-card-text>
+                    <v-card-actions class="d-flex justify-center pb-5">
+                      <div>
+                        <v-btn type="submit" variant="tonal" block @click="notesDialog = false">閉じる</v-btn>
+                      </div>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+                <p>{{ DateTime.fromISO(task.start_datetime).toFormat('H:mm') }}〜{{ DateTime.fromISO(task.end_datetime).toFormat('H:mm') }}</p>
+              </div>
+              <p class="pb-1">{{ task.work_place }}</p>
+              <p class="pb-1">{{ task.name }}</p>
+              <p class="pb-1">{{ task.vehicles }}</p>
+            </div>
           </div>
         </v-card>
       </v-sheet>
@@ -133,7 +159,7 @@
                 <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
               </v-col>
               <v-col cols="6">
-                <v-select label="ステータス" :items='[0, 1, 2]' v-model="currentTask.status" class="mb-3"></v-select>
+                <v-select label="ステータス" :items='[ "未着手", "着手中", "完了"]' item-text="text" v-model="currentTask.status" class="mb-3"></v-select>
               </v-col>
             </v-row>
           </v-form>
@@ -163,3 +189,23 @@
     </v-card>
   </v-dialog>
 </template>
+
+<style scoped>
+  .relative {
+    position: relative;
+  }
+
+  .absolute {
+    position: absolute;
+  }
+
+  .status {
+    top: -10px;
+    left: 0px;
+  }
+
+  .notes {
+    top: 7px;
+    left: -13.3px;
+  }
+</style>

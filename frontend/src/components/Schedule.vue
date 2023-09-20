@@ -50,6 +50,7 @@
   // 取得したタスク情報のリスト
   const tasks = ref([]);
 
+
   // フォーマットを指定したプロジェクト期間のオブジェクトを生成
   function getDates(start_date, end_date) {
     let currentDate = start_date;
@@ -186,11 +187,15 @@
     }
   }
 
+  function sortedTasks() {
+    tasks.value = [...tasks.value].sort((a, b) => (a.start_datetime > b.start_datetime ? 1 : -1));
+  }
   // タスク情報を取得
   async function fetchTaskData() {
     try{
       const taskResponse = await axios.get(`http://localhost:3000/api/v1/task`);
       tasks.value = taskResponse.data;
+      sortedTasks()
     } catch(error) {
       console.log('タスク情報の取得に失敗しました', error);
     }
