@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_09_090429) do
+ActiveRecord::Schema.define(version: 2023_09_20_192652) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -80,7 +80,22 @@ ActiveRecord::Schema.define(version: 2023_09_09_090429) do
     t.index ["sheet_id"], name: "index_tasks_on_sheet_id"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "syllabic_characters", null: false
+    t.string "email", null: false
+    t.string "phone_number", null: false
+    t.string "password_digest", null: false
+    t.integer "role", default: 0, null: false
+    t.integer "company_id_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["company_id_id"], name: "index_users_on_company_id_id"
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
   add_foreign_key "clients", "companies"
   add_foreign_key "projects", "clients"
   add_foreign_key "sheets", "projects"
+  add_foreign_key "users", "company_ids"
 end
