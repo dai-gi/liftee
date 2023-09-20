@@ -12,6 +12,7 @@
 
 class Project < ApplicationRecord
   belongs_to :client
+  has_many :sheet, dependent: :destroy
 
   enum status: { pending: 0, start: 1, end: 2 }
 
@@ -25,6 +26,6 @@ class Project < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["clients"]
+    ["clients", "sheet"]
   end
 end

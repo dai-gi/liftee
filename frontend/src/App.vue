@@ -15,23 +15,27 @@
               <p class="project-list text-white text-button ml-5">プロジェクトリスト</p>
             </router-link>
           </v-col>
-          <v-col cols="4" offset="1" class="d-flex flex-row">
-            <v-text-field density="compact" variant="solo" label="検索" placeholder="プロジェクト名、作業内容など..." append-inner-icon="mdi-magnify"  hide-details @click:append-inner="onClick"></v-text-field>
-            <v-btn icon="mdi-dots-vertical" class="mx-5"></v-btn>
+          <v-col cols="4" offset="1" class="d-flex flex-row justify-end">
+            <!-- <v-text-field density="compact" variant="solo" label="検索" placeholder="プロジェクト名、作業内容など..." append-inner-icon="mdi-magnify"  hide-details @click:append-inner="onClick"></v-text-field> -->
+            <v-btn icon="mdi-account-circle-outline" class="mr-5 text-h6"></v-btn>
           </v-col>
         </v-row>
       </v-container>
     </v-app-bar>
     <v-main>
-      <v-container class="py-8 px-6" fluid>
+      <v-container fluid>
         <router-view></router-view>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
-<style>
+<style scoped>
   .project-list:hover {
     opacity: 0.7;
+  }
+
+  main {
+    width: 1500px;
   }
 </style>
