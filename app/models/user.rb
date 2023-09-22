@@ -9,4 +9,12 @@ class User < ApplicationRecord
   validates :phone_number, presence: true
   validates :password_digest, presence: true
   validates :role, presence: true
+
+  def self.ransackable_attributes(auth_object = nil)
+    ["id", "name", "syllabic_characters", "email", "phone_number", "password_digest", "role", "company_id", "created_at", "updated_at"]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ["companies"]
+  end
 end
