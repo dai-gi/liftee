@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       resources :project, only: [:index, :show]
       resources :sheet, only: [:index, :show, :create, :destroy, :update]
       resources :task, only: [:index, :show, :create, :destroy, :update]
+      resources :sessions, only: [:create]
     end
   end
 end
