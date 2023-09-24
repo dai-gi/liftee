@@ -1,6 +1,4 @@
-class Api::V1::TaskController < ApplicationController
-  protect_from_forgery
-
+class Api::V1::TaskController < ApiController
   before_action :set_task, only: [:show, :update, :destroy]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
