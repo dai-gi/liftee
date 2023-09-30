@@ -1,39 +1,23 @@
 <script setup>
-  import { ref, onMounted, computed } from 'vue';
-
-  // Router
+  import { ref, onMounted} from 'vue';
   import { useRouter } from 'vue-router'
-
-  // 日付ライブラリ
   import { DateTime } from 'luxon';
-
-  // API
   import axios from 'axios';
-
-  // 日付ピッカー
   import VueDatePicker from '@vuepic/vue-datepicker';
   import '@vuepic/vue-datepicker/dist/main.css';
+  import { useStore } from 'vuex';
 
-  // Props
   defineProps(['task']);
 
-  // Router
+  const store = useStore();
   const router = useRouter();
-
-  // 取得したタスク情報のリスト
   const tasks = ref([]);
-  // 選択した現在のタスク
-  let currentTask = ref('');
-  // 選択した現在のタスクのID
+  const currentTask = ref('');
   const currentTaskId = ref(0);
-
-  // ダイアログ
   const dialog = ref(false);
   const deleteTaskDialog = ref(false);
   const notesDialog = ref(false);
 
-
-  // タスク情報を取得
   async function fetchTaskData() {
     try{
       const taskResponse = await axios.get(`http://localhost:3000/api/v1/task`);
@@ -42,7 +26,7 @@
       console.log('タスク情報の取得に失敗しました', error);
     }
   }
-  // タスク情報を編集
+
   async function editTask() {
     try {
       await axios.patch(
@@ -65,7 +49,7 @@
       console.log('シートの編集に失敗しました', error);
     }
   }
-  // タスク情報削除
+
   async function deleteTask() {
     try {
       await axios.delete(`http://localhost:3000/api/v1/task/${currentTaskId.value}`);
@@ -74,7 +58,7 @@
       console.log('タスクの削除に失敗しました', error);
     }
   }
-  // 選択したタスク情報を取得
+
   function getCurrentTask(task) {
     currentTaskId.value = task.id
     currentTask.value = {...task}
@@ -138,34 +122,40 @@
           <v-form>
             <v-row>
               <v-col cols="12">
-                <v-text-field label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
+                <v-text-field v-else label="業者名" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="作業内容" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="作業名" required v-model="currentTask.name" class="mb-3"></v-text-field>
+                <v-text-field v-else label="作業名" required v-model="currentTask.name" class="mb-3"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="作業場所" required v-model="currentTask.work_place" class="mb-3"></v-text-field>
+                <v-text-field v-else label="作業場所" required v-model="currentTask.trader_name" class="mb-3"></v-text-field>
               </v-col>
               <v-col cols="6">
-                <VueDatePicker locale="jp" utc v-model.lazy="currentTask.start_datetime"></VueDatePicker>
+                <VueDatePicker :readonly="store.state.user.role === 'general' ? true : false" locale="jp" utc v-model.lazy="currentTask.start_datetime"></VueDatePicker>
               </v-col>
               <v-col cols="6">
-                <VueDatePicker locale="jp" utc v-model="currentTask.end_datetime"></VueDatePicker>
+                <VueDatePicker :readonly="store.state.user.role === 'general' ? true : false" locale="jp" utc v-model="currentTask.end_datetime"></VueDatePicker>
               </v-col>
               <v-col cols="6">
-                <v-text-field label="車輌台数" required v-model="currentTask.vehicles" class="mb-3"></v-text-field>
+                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="車輌台数" required v-model="currentTask.vehicles" class="mb-3"></v-text-field>
+                <v-text-field v-else label="車輌台数" required v-model="currentTask.vehicles" class="mb-3"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-textarea label="注意事項" v-model="currentTask.notes" class="mb-3"></v-textarea>
+                <v-textarea v-if="store.state.user.role === 'general'" variant="underlined" readonly label="注意事項" required v-model="currentTask.notes" class="mb-3"></v-textarea>
+                <v-textarea v-else label="注意事項" required v-model="currentTask.notes" class="mb-3"></v-textarea>
               </v-col>
               <v-col cols="6">
-                <v-select label="ステータス" :items='[ "未着手", "着手中", "完了"]' item-text="text" v-model="currentTask.status" class="mb-3"></v-select>
+                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="ステータス" required v-model="currentTask.status" class="mb-3"></v-text-field>
+                <v-select v-else label="ステータス" required v-model="currentTask.status" class="mb-3"></v-select>
               </v-col>
             </v-row>
           </v-form>
         </v-container>
       </v-card-text>
-      <v-card-actions class="d-flex justify-center mt-10 mb-5">
+      <v-card-actions v-if="store.state.user.role === 'project_manager'" class="d-flex justify-center mt-10 mb-5">
         <div class="mr-5">
           <v-btn class="px-5" type="submit" variant="tonal" color="yellow-darken-4" block @click="editTask">編集</v-btn>
         </div>

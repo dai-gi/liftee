@@ -1,40 +1,27 @@
 <script setup>
   import { onMounted, ref } from 'vue';
-
-  // Router
   import { useRoute, useRouter } from 'vue-router'
-
-  // API
   import axios from 'axios';
-
-  // 日付ピッカー
   import VueDatePicker from '@vuepic/vue-datepicker';
   import '@vuepic/vue-datepicker/dist/main.css';
-
-  // 予定表コンポーネント
   import Schedule from '../components/Schedule.vue';
+  import { useStore } from 'vuex';
 
-  // Router
+  const store = useStore();
   const router = useRouter();
   const route = useRoute();
-
-  // 現在表示されているプロジェクトのID
   const projectId = route.params.id;
-
-  // 現在のプロジェクトが持つシートのリスト
   const currentSheets = ref([]);
-  // 現在表示しているシート
   const currentSheet = ref('');
-  // シート作成時のパラメータ
-  const sheetObj = ref({
+
+  const requestCreateSheetObj = ref({
     sheet: {
       name: '',
       project_id: projectId
     }
   })
 
-  // タスク作成時のパラメータ
-  const taskObj = ref({
+  const requestCreateTaskObj = ref({
     task: {
       trader_name: '',
       name: '',
@@ -48,16 +35,11 @@
     }
   })
 
-  // シートCRUD用のダイアログ
   const createSheetDialog = ref(false);
   const editSheetDialog = ref(false);
   const deleteSheetDialog = ref(false);
-
-  // タスクCRUD用のダイアログ
   const createTaskDialog = ref(false);
 
-
-  // シート情報取得
   async function fetchSheetData() {
     try{
       const sheetResponse = await axios.get(`http://localhost:3000/api/v1/sheet`);
@@ -73,16 +55,16 @@
       console.log('シート情報の取得に失敗しました', error);
     }
   }
-  // シート作成
+
   async function createSheet() {
     try {
-      await axios.post('http://localhost:3000/api/v1/sheet', sheetObj.value);
+      await axios.post('http://localhost:3000/api/v1/sheet', requestCreateSheetObj.value);
       router.go(0)
     } catch(error) {
       console.log('シートの作成に失敗しました', error);
     }
   }
-  // シート情報削除
+
   async function deleteSheet() {
     try {
       await axios.delete(`http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`);
@@ -91,7 +73,7 @@
       console.log('シートの削除に失敗しました', error);
     }
   }
-  // シート情報更新
+
   async function updateSheet() {
     try {
       await axios.patch(
@@ -102,24 +84,22 @@
             project_id: projectId
           }
         }
-      );
+        );
       router.go(0);
     } catch(error) {
       console.log('シートの編集に失敗しました', error);
     }
   }
 
-  // タスク作成
   async function createTask() {
-    taskObj.value.task.sheet_id = currentSheet.value.id
+    requestCreateTaskObj.value.task.sheet_id = currentSheet.value.id
     try {
-      await axios.post('http://localhost:3000/api/v1/task', taskObj.value);
+      await axios.post('http://localhost:3000/api/v1/task', requestCreateTaskObj.value);
       router.go(0)
     } catch(error) {
       console.log('タスクの作成に失敗しました', error);
     }
   }
-
 
   onMounted(() => {
     fetchSheetData()
@@ -132,7 +112,7 @@
       <div v-if="currentSheets.length !== 0">
         <v-menu transition="scale-transition">
           <template v-slot:activator="{ props }">
-            <v-btn variant="outlined" class="mr-3 text-blue-darken-4 text-h5" icon="mdi-plus" v-bind="props"></v-btn>
+            <v-btn v-if="store.state.user.role === 'project_manager'" variant="outlined" class="mr-3 text-blue-darken-4 text-h5" icon="mdi-plus" v-bind="props"></v-btn>
           </template>
           <v-list>
             <v-list-item>
@@ -142,11 +122,14 @@
                     シート追加
                   </v-btn>
                 </template>
-                <v-card width="500" class="mx-auto">
+                <v-card width="500" class="py-3 mx-auto">
+                  <div class="d-flex justify-end mr-3">
+                    <v-btn variant="text" icon="mdi-window-close" @click="createSheetDialog = false"></v-btn>
+                  </div>
                   <v-form @submit.prevent="createSheet">
                     <v-card-text class="pb-0">
                       <v-container class="pb-0">
-                        <v-text-field label="シート名" required v-model="sheetObj.sheet.name"></v-text-field>
+                        <v-text-field label="シート名" required v-model="requestCreateSheetObj.sheet.name"></v-text-field>
                       </v-container>
                     </v-card-text>
                     <v-card-actions class="d-flex justify-center pb-5">
@@ -174,28 +157,28 @@
                       <v-form @submit.prevent="createTask">
                         <v-row>
                           <v-col cols="12">
-                            <v-text-field label="業者名" required v-model="taskObj.task.trader_name" class="mb-3"></v-text-field>
+                            <v-text-field label="業者名" required v-model="requestCreateTaskObj.task.trader_name" class="mb-3"></v-text-field>
                           </v-col>
                           <v-col cols="12">
-                            <v-text-field label="作業内容" required v-model="taskObj.task.name" class="mb-3"></v-text-field>
+                            <v-text-field label="作業内容" required v-model="requestCreateTaskObj.task.name" class="mb-3"></v-text-field>
                           </v-col>
                           <v-col cols="12">
-                            <v-text-field label="作業場所" required v-model="taskObj.task.work_place" class="mb-3"></v-text-field>
+                            <v-text-field label="作業場所" required v-model="requestCreateTaskObj.task.work_place" class="mb-3"></v-text-field>
                           </v-col>
                           <v-col cols="6">
-                            <VueDatePicker locale="jp" v-model="taskObj.task.start_datetime"></VueDatePicker>
+                            <VueDatePicker locale="jp" v-model="requestCreateTaskObj.task.start_datetime"></VueDatePicker>
                           </v-col>
                           <v-col cols="6">
-                            <VueDatePicker locale="jp" v-model="taskObj.task.end_datetime"></VueDatePicker>
+                            <VueDatePicker locale="jp" v-model="requestCreateTaskObj.task.end_datetime"></VueDatePicker>
                           </v-col>
                           <v-col cols="6">
-                            <v-text-field label="車輌台数" required v-model="taskObj.task.vehicles" class="mb-3"></v-text-field>
+                            <v-text-field label="車輌台数" required v-model="requestCreateTaskObj.task.vehicles" class="mb-3"></v-text-field>
                           </v-col>
                           <v-col cols="12">
-                            <v-textarea label="注意事項" v-model="taskObj.task.notes" class="mb-3"></v-textarea>
+                            <v-textarea label="注意事項" v-model="requestCreateTaskObj.task.notes" class="mb-3"></v-textarea>
                           </v-col>
                           <v-col cols="6">
-                            <v-select label="ステータス" :items='[0, 1, 2]' v-model="taskObj.task.status" class="mb-3"></v-select>
+                            <v-select label="ステータス" :items='[0, 1, 2]' v-model="requestCreateTaskObj.task.status" class="mb-3"></v-select>
                           </v-col>
                         </v-row>
                       </v-form>
@@ -216,15 +199,15 @@
     <v-container class="d-flex align-center py-8 px-0">
       <template v-for="sheet in currentSheets" :key="sheet">
         <div class="relative-item mr-5">
-          <v-btn rounded="0" class="d-flex pl-5 pr-0" variant="outlined" @click="currentSheet = sheet">
+          <v-btn v-if="store.state.user.role === 'project_manager'" rounded="0" class="d-flex pl-5 pr-0" variant="outlined" @click="currentSheet = {...sheet}">
             <p>{{ sheet.name }}</p>
             <v-menu transition="scale-transition">
               <template v-slot:activator="{ props }">
-                <v-btn  v-bind="props" icon="mdi-information-outline" class="text-caption text-grey-darken-1" variant="text" @click="currentSheet = sheet"></v-btn>
+                <v-btn v-bind="props" icon="mdi-information-outline" class="text-caption text-grey-darken-1" variant="text" @click="currentSheet = {...sheet}"></v-btn>
               </template>
               <v-list>
                 <v-list-item>
-                <v-dialog v-model="editSheetDialog">
+                <v-dialog v-model="currentSheet.name">
                   <template v-slot:activator="{ props }">
                     <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props" color="yellow-darken-4">
                       編集
@@ -266,6 +249,9 @@
               </v-list-item>
               </v-list>
             </v-menu>
+          </v-btn>
+          <v-btn v-else rounded="0" variant="outlined" @click="currentSheet = sheet">
+            <p>{{ sheet.name }}</p>
           </v-btn>
         </div>
       </template>

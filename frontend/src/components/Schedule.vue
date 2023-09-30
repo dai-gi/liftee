@@ -1,57 +1,27 @@
 <script setup>
   import { onMounted, ref, computed } from 'vue';
-
-  // Router
   import { useRoute } from 'vue-router'
-
-  // 日付ライブラリ
   import { DateTime } from 'luxon';
-
-  // API
   import axios from 'axios';
-
-  // タスクコンポーネント
   import Task from './Task.vue';
 
-  // Props
   defineProps(['sheet']);
 
-  // Router
   const route = useRoute();
-
-  // プロジェクト期間分の日付
   const dateAndWeekdayList = ref([]);
-  // 表示する日数
   const displayList = ref([]);
-
-  // ページ数
   const totalNumberOfPages = ref(0);
-  // 表示したい日数
   const itemsPerPage = 7;
-  // ページネーションの番号のリスト
   const paginateNumbersList = ref([]);
-  // 現在のページ
   const currentPage = ref(1);
-  // 表示させたいボタン数の数字が
   const filterPaginateNumberList = ref([]);
-
-  // プロジェクト情報を取得
   const projects = ref([]);
-  // 現在表示されているプロジェクト情報
   const currentProject = ref('');
-  // 現在表示されているプロジェクトのID
   const projectId = route.params.id;
-
-  // 現在のプロジェクトが持つシートのリスト
   const currentSheets = ref([]);
-  // 現在表示しているシート
   const currentSheet = ref('');
-
-  // 取得したタスク情報のリスト
   const tasks = ref([]);
 
-
-  // フォーマットを指定したプロジェクト期間のオブジェクトを生成
   function getDates(start_date, end_date) {
     let currentDate = start_date;
     while(currentDate <= end_date) {
@@ -64,8 +34,6 @@
     displayList.value = dateAndWeekdayList.value.slice(0, 7);
   }
 
-
-  // ページネーションの番号を生成
   function paginateNumbers() {
     totalNumberOfPages.value = Math.ceil(dateAndWeekdayList.value.length / itemsPerPage);
 
@@ -84,17 +52,14 @@
       startNumber = endNumber
       endNumber = endNumber + itemsPerPage
     }
-    // 表示させたいボタンの数だけのボタンのリスト
     filterPaginateNumberList.value = paginateNumbersList.value.slice(startPageNumber, endPageNumber);
   }
 
-  // ページネーションのボタンを押下したらそのページが表示する
   function clickPageNumber(element) {
     currentPage.value = element.id
     displayList.value = dateAndWeekdayList.value.slice(element.startNumber, element.endNumber)
   }
 
-  // 次のページに移動
   function increasePaginateNumberList() {
     if(currentPage.value > endPageNumber) {
       startPageNumber = endPageNumber;
@@ -114,7 +79,6 @@
     increasePaginateNumberList();
   }
 
-  // 前のページに移動
   function diminishPaginateNumberList() {
     if(currentPage.value < startPageNumber + 1) {
       startPageNumber -= 10;
@@ -134,7 +98,6 @@
     diminishPaginateNumberList();
   }
 
-  // PrevボタンとNextボタンを制御
   const toggleRipple = computed(() => {
     if(currentPage.value === totalNumberOfPages.value) {
       return false
@@ -145,8 +108,6 @@
     }
   })
 
-
-  // プロジェクト情報を取得
   async function fetchProjectData() {
     try{
       const projectResponse = await axios.get(`http://localhost:3000/api/v1/project`);
@@ -156,8 +117,8 @@
       console.log('プロジェクト情報の取得に失敗しました', error);
     }
   }
-  // 選択されたプロジェクト情報を取得
-  const getCurrentProject = () => {
+
+  function getCurrentProject() {
     projects.value.forEach(project => {
       if(projectId == project.id) {
         currentProject.value = project;
@@ -169,8 +130,6 @@
     paginateNumbers()
   }
 
-
-  // シート情報を取得
   async function fetchSheetData() {
     try{
       const sheetResponse = await axios.get(`http://localhost:3000/api/v1/sheet`);
@@ -190,7 +149,7 @@
   function sortedTasks() {
     tasks.value = [...tasks.value].sort((a, b) => (a.start_datetime > b.start_datetime ? 1 : -1));
   }
-  // タスク情報を取得
+
   async function fetchTaskData() {
     try{
       const taskResponse = await axios.get(`http://localhost:3000/api/v1/task`);

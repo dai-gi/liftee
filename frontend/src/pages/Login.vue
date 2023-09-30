@@ -5,12 +5,9 @@ import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 
 const store = useStore();
-
 const router = useRouter();
-
 const email = ref('');
 const password = ref('');
-
 const errorMessages = ref('');
 
 async function loginUser() {

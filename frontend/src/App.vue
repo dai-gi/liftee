@@ -5,9 +5,7 @@
   import { useRouter } from 'vue-router';
 
   const store = useStore();
-
   const router = useRouter();
-
   const myPageDialog = ref(false);
 
   function logoutUser() {
