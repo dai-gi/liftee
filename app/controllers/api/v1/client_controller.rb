@@ -1,4 +1,4 @@
-class Api::V1::ClientController < ApplicationController
+class Api::V1::ClientController < ApiController
   before_action :set_client, only: [:show]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|

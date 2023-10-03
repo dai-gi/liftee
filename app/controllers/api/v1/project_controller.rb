@@ -1,4 +1,4 @@
-class Api::V1::ProjectController < ApplicationController
+class Api::V1::ProjectController < ApiController
   before_action :set_project, only: [:show]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|

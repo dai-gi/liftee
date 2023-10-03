@@ -1,6 +1,4 @@
-class Api::V1::SheetController < ApplicationController
-  protect_from_forgery
-
+class Api::V1::SheetController < ApiController
   before_action :set_sheet, only: [:show, :update, :destroy]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|

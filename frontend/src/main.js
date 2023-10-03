@@ -15,6 +15,9 @@ import * as directives from 'vuetify/directives'
 // ress
 import 'ress'
 
+// Vuex
+import store from './store'
+
 const vuetify = createVuetify({
   components,
   directives,
@@ -24,4 +27,5 @@ const app = createApp(App)
 
 app.use(router)
 app.use(vuetify)
+app.use(store)
 app.mount('#app')
