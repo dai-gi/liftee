@@ -14,6 +14,7 @@
   const sheetWithCurrentProject = ref([]);
   const selectedSheet = ref('');
   const currentSheet = ref('');
+  const selectedStatus = ref('');
 
   const requestCreateSheetObj = ref({
     sheet: {
@@ -31,7 +32,7 @@
       end_datetime: '',
       vehicles: '',
       notes: '',
-      status: '',
+      status: selectedStatus.value === '完了' ? 2 : selectedStatus.value === '着手中' ? 1 : 0,
       sheet_id: 3
     }
   })
@@ -179,7 +180,7 @@
                             <v-textarea label="注意事項" v-model="requestCreateTaskObj.task.notes" class="mb-3"></v-textarea>
                           </v-col>
                           <v-col cols="6">
-                            <v-select label="ステータス" :items='[0, 1, 2]' v-model="requestCreateTaskObj.task.status" class="mb-3"></v-select>
+                            <v-select label="ステータス" :items="['未着手', '着手中', '完了']" v-model="selectedStatus" class="mb-3"></v-select>
                           </v-col>
                         </v-row>
                       </v-form>

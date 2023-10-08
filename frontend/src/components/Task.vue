@@ -62,9 +62,9 @@
   function getCurrentTask(task) {
     currentTaskId.value = task.id
     currentTask.value = {...task}
-    if( currentTask.value.status === 'end' ) {
+    if( currentTask.value.status === 2 ) {
       currentTask.value.status = '完了'
-    } else if ( currentTask.value.status === 'start' ) {
+    } else if ( currentTask.value.status === 1 ) {
       currentTask.value.status = '着手中'
     } else {
       currentTask.value.status = '未着手'
@@ -80,7 +80,7 @@
   <v-dialog v-model="dialog">
     <template v-slot:activator="{ props }">
       <v-sheet @click="getCurrentTask(task)" v-bind="props">
-        <v-card variant="outlined"  :style="{ 'opacity': [ task.status === 'end' ?  0.6 : 1] }" :class="{'text-grey-lighten-1 mb-2': task.status === 'pending', 'text-blue-lighten-4 mb-2': task.status === 'start', 'text-blue-darken-1 mb-2': task.status === 'end'}" @click="active = true" v-click-outside="onClickOutside">
+        <v-card variant="outlined"  :style="{ 'opacity': [ task.status === 'end' ?  0.4 : 1] }" :class="{'text-grey-lighten-1 mb-2': task.status === 'pending', 'text-blue-lighten-4 mb-2': task.status === 'start', 'text-blue-darken-1 mb-2': task.status === 'end'}" @click="active = true" v-click-outside="onClickOutside">
           <p class="text-body-2 pa-1"  :class="{'bg-grey-lighten-1 text-grey-darken-2': task.status === 'pending', 'bg-blue-lighten-1 text-white': task.status === 'start', 'bg-blue-darken-2 text-white': task.status === 'end'}">
             {{ task.trader_name }}
           </p>
@@ -148,18 +148,17 @@
                 <v-textarea v-else label="注意事項" required v-model="currentTask.notes" class="mb-3"></v-textarea>
               </v-col>
               <v-col cols="6">
-                <v-text-field v-if="store.state.user.role === 'general'" variant="underlined" readonly label="ステータス" required v-model="currentTask.status" class="mb-3"></v-text-field>
-                <v-select v-else label="ステータス" required v-model="currentTask.status" class="mb-3"></v-select>
+                <v-select label="ステータス" :items="['未着手', '着手中', '完了']" required v-model="currentTask.status" class="mb-3"></v-select>
               </v-col>
             </v-row>
           </v-form>
         </v-container>
       </v-card-text>
-      <v-card-actions v-if="store.state.user.role === 'project_manager'" class="d-flex justify-center mt-10 mb-5">
+      <v-card-actions class="d-flex justify-center mt-10 mb-5">
         <div class="mr-5">
           <v-btn class="px-5" type="submit" variant="tonal" color="yellow-darken-4" block @click="editTask">編集</v-btn>
         </div>
-        <div class="mr-5">
+        <div class="mr-5" v-if="store.state.user.role === 'project_manager'">
           <v-dialog v-model="deleteTaskDialog">
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="px-5" type="submit" variant="tonal" color="red-darken-2" block>削除</v-btn>
