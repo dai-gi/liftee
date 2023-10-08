@@ -18,6 +18,8 @@ async function loginUser() {
     }
   };
 
+  store.dispatch('startLoading');
+
   try {
     const response = await axios.post('http://localhost:3000/api/v1/sessions', requestData);
     console.log('ログイン成功', response.data);
@@ -26,6 +28,10 @@ async function loginUser() {
   } catch (error) {
     errorMessages.value = 'メールアドレスまたは、パスワードが間違っています';
     console.log('ログイン失敗', error.response.data);
+  } finally {
+    setTimeout(() => {
+        store.dispatch('stopLoading');
+    }, 1000);
   }
 };
 </script>

@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted} from 'vue';
+  import { ref, onMounted, computed} from 'vue';
   import { useRouter } from 'vue-router'
   import { DateTime } from 'luxon';
   import axios from 'axios';
@@ -19,15 +19,21 @@
   const notesDialog = ref(false);
 
   async function fetchTaskData() {
+    store.dispatch('startLoading');
     try{
       const taskResponse = await axios.get(`http://localhost:3000/api/v1/task`);
       tasks.value = taskResponse.data;
     } catch(error) {
       console.log('タスク情報の取得に失敗しました', error);
+    } finally {
+      setTimeout(() => {
+        store.dispatch('stopLoading');
+      }, 1000);
     }
   }
 
   async function editTask() {
+    store.dispatch('startLoading');
     try {
       await axios.patch(
         `http://localhost:3000/api/v1/task/${currentTaskId.value}`,

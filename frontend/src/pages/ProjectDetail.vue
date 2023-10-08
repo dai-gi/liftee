@@ -43,6 +43,7 @@
   const createTaskDialog = ref(false);
 
   async function fetchSheetData() {
+    store.dispatch('startLoading');
     try{
       const sheetResponse = await axios.get(`http://localhost:3000/api/v1/sheet`);
       const currentProjectSheets = [];
@@ -55,6 +56,10 @@
       selectedSheet.value = currentProjectSheets[0];
     } catch(error) {
       console.log('シート情報の取得に失敗しました', error);
+    } finally {
+      setTimeout(() => {
+        store.dispatch('stopLoading');
+      }, 1000);
     }
   }
 
