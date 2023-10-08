@@ -11,7 +11,8 @@
   const router = useRouter();
   const route = useRoute();
   const projectId = route.params.id;
-  const currentSheets = ref([]);
+  const sheetWithCurrentProject = ref([]);
+  const selectedSheet = ref('');
   const currentSheet = ref('');
 
   const requestCreateSheetObj = ref({
@@ -36,7 +37,7 @@
   })
 
   const createSheetDialog = ref(false);
-  const editSheetDialog = ref(false);
+  const updateSheetDialog = ref(false);
   const deleteSheetDialog = ref(false);
   const createTaskDialog = ref(false);
 
@@ -49,8 +50,8 @@
           currentProjectSheets.push(sheet)
         }
       });
-      currentSheets.value = currentProjectSheets;
-      currentSheet.value = currentProjectSheets[0];
+      sheetWithCurrentProject.value = currentProjectSheets;
+      selectedSheet.value = currentProjectSheets[0];
     } catch(error) {
       console.log('シート情報の取得に失敗しました', error);
     }
@@ -67,7 +68,7 @@
 
   async function deleteSheet() {
     try {
-      await axios.delete(`http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`);
+      await axios.delete(`http://localhost:3000/api/v1/sheet/${selectedSheet.value.id}`);
       router.go(0)
     } catch(error) {
       console.log('シートの削除に失敗しました', error);
@@ -77,10 +78,10 @@
   async function updateSheet() {
     try {
       await axios.patch(
-        `http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`,
+        `http://localhost:3000/api/v1/sheet/${selectedSheet.value.id}`,
         {
           sheet: {
-            name: currentSheet.value.name,
+            name: selectedSheet.value.name,
             project_id: projectId
           }
         }
@@ -92,7 +93,7 @@
   }
 
   async function createTask() {
-    requestCreateTaskObj.value.task.sheet_id = currentSheet.value.id
+    requestCreateTaskObj.value.task.sheet_id = selectedSheet.value.id
     try {
       await axios.post('http://localhost:3000/api/v1/task', requestCreateTaskObj.value);
       router.go(0)
@@ -109,7 +110,7 @@
 <template>
   <v-sheet>
     <v-container class="d-flex justify-end">
-      <div v-if="currentSheets.length !== 0">
+      <div v-if="sheetWithCurrentProject.length !== 0">
         <v-menu transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-btn v-if="store.state.user.role === 'project_manager'" variant="outlined" class="mr-3 text-blue-darken-4 text-h5" icon="mdi-plus" v-bind="props"></v-btn>
@@ -197,24 +198,24 @@
       </div>
     </v-container>
     <v-container class="d-flex align-center py-8 px-0">
-      <template v-for="sheet in currentSheets" :key="sheet">
-        <div class="relative-item mr-5">
-          <v-btn v-if="store.state.user.role === 'project_manager'" rounded="0" class="d-flex pl-5 pr-0" variant="outlined" @click="currentSheet = {...sheet}">
-            <p>{{ sheet.name }}</p>
+      <template v-for="sheet in sheetWithCurrentProject" :key="sheet">
+        <div class="mr-5">
+          <v-card v-if="store.state.user.role === 'project_manager'" :ripple="false" rounded="0" class="d-flex text-blue-darken-3" variant="outlined" @click="selectedSheet = {...sheet}">
+            <v-card-text class="align-self-center text-black py-3 pr-1">{{ sheet.name }}</v-card-text>
             <v-menu transition="scale-transition">
               <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon="mdi-information-outline" class="text-caption text-grey-darken-1" variant="text" @click="currentSheet = {...sheet}"></v-btn>
+                <v-btn density="compact" v-bind="props" :ripple="false" icon="mdi-dots-vertical" class="align-self-center text-caption text-blue-darken-3 mr-1" variant="text" @click="currentSheet = {...sheet}"></v-btn>
               </template>
               <v-list>
                 <v-list-item>
-                <v-dialog v-model="currentSheet.name">
+                <v-dialog v-model="updateSheetDialog">
                   <template v-slot:activator="{ props }">
                     <v-btn rounded="0" variant="plain" class="mr-0" v-bind="props" color="yellow-darken-4">
                       編集
                     </v-btn>
                   </template>
                   <v-card width="500" class="mx-auto">
-                    <v-form @submit.prevent="editSheet">
+                    <v-form @submit.prevent="updateSheet">
                       <v-card-text class="pb-0">
                         <v-container class="pb-0">
                           <v-text-field label="シート名" required v-model="currentSheet.name"></v-text-field>
@@ -249,8 +250,8 @@
               </v-list-item>
               </v-list>
             </v-menu>
-          </v-btn>
-          <v-btn v-else rounded="0" variant="outlined" @click="currentSheet = sheet">
+          </v-card>
+          <v-btn v-else rounded="0" variant="outlined" @click="selectedSheet = sheet">
             <p>{{ sheet.name }}</p>
           </v-btn>
         </div>
@@ -260,5 +261,5 @@
   <v-sheet class="d-flex justify-center align-center mt-15 mb-10">
     <p class="text-h6 font-weight-bold">週間揚重予定表</p>
   </v-sheet>
-  <Schedule :sheet="currentSheet" />
+  <Schedule :sheet="selectedSheet" />
 </template>
