@@ -74,7 +74,7 @@
 
   async function deleteSheet() {
     try {
-      await axios.delete(`http://localhost:3000/api/v1/sheet/${selectedSheet.value.id}`);
+      await axios.delete(`http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`);
       router.go(0)
     } catch(error) {
       console.log('シートの削除に失敗しました', error);
@@ -84,14 +84,14 @@
   async function updateSheet() {
     try {
       await axios.patch(
-        `http://localhost:3000/api/v1/sheet/${selectedSheet.value.id}`,
+        `http://localhost:3000/api/v1/sheet/${currentSheet.value.id}`,
         {
           sheet: {
-            name: selectedSheet.value.name,
+            name: currentSheet.value.name,
             project_id: projectId
           }
         }
-        );
+      );
       router.go(0);
     } catch(error) {
       console.log('シートの編集に失敗しました', error);
