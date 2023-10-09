@@ -10,15 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_22_114630) do
+ActiveRecord::Schema.define(version: 2023_09_20_192652) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
     t.string "resource_type"
-    t.integer "resource_id"
+    t.bigint "resource_id"
     t.string "author_type"
-    t.integer "author_id"
+    t.bigint "author_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
@@ -33,7 +36,7 @@ ActiveRecord::Schema.define(version: 2023_09_22_114630) do
     t.string "remarks"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "company_id"
+    t.bigint "company_id"
     t.index ["company_id"], name: "index_clients_on_company_id"
   end
 
@@ -53,13 +56,13 @@ ActiveRecord::Schema.define(version: 2023_09_22_114630) do
     t.string "overview"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "client_id"
+    t.bigint "client_id"
     t.index ["client_id"], name: "index_projects_on_client_id"
   end
 
   create_table "sheets", force: :cascade do |t|
     t.string "name"
-    t.integer "project_id", null: false
+    t.bigint "project_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["project_id"], name: "index_sheets_on_project_id"
@@ -74,7 +77,7 @@ ActiveRecord::Schema.define(version: 2023_09_22_114630) do
     t.string "vehicles", null: false
     t.string "notes"
     t.integer "status", default: 0, null: false
-    t.integer "sheet_id", null: false
+    t.bigint "sheet_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["sheet_id"], name: "index_tasks_on_sheet_id"
@@ -87,7 +90,7 @@ ActiveRecord::Schema.define(version: 2023_09_22_114630) do
     t.string "phone_number", null: false
     t.string "password_digest", null: false
     t.integer "role", default: 0, null: false
-    t.integer "company_id", null: false
+    t.bigint "company_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["company_id"], name: "index_users_on_company_id"
@@ -97,4 +100,6 @@ ActiveRecord::Schema.define(version: 2023_09_22_114630) do
   add_foreign_key "clients", "companies"
   add_foreign_key "projects", "clients"
   add_foreign_key "sheets", "projects"
+  add_foreign_key "tasks", "sheets"
+  add_foreign_key "users", "companies"
 end
