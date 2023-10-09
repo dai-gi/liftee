@@ -1,12 +1,14 @@
 <script setup>
   import CompanyName from './components/CompanyName.vue';
-  import { ref } from 'vue';
+  import { ref, computed } from 'vue';
   import { useStore } from 'vuex';
   import { useRouter } from 'vue-router';
+  import Loading from './components/Loading.vue';
 
   const store = useStore();
   const router = useRouter();
   const myPageDialog = ref(false);
+  const isLoading = computed(() => store.state.isLoading);
 
   function logoutUser() {
     store.commit('logout', '', false);
@@ -16,12 +18,13 @@
 
 <template>
   <v-app>
+    <Loading v-if="isLoading" />
     <template v-if="store.state.isLoggedIn">
-      <v-app-bar color="blue-darken-2">
+      <v-app-bar class="index-2" color="blue-darken-2">
         <v-container>
           <v-row align="center" no-gutters>
             <v-col cols="7" class="d-flex flex-row align-center">
-              <router-link to="/">
+              <router-link to="/project-list">
                 <v-toolbar-title class="text-white ma-2 pa-2">Liftee<CompanyName /></v-toolbar-title>
               </router-link>
               <router-link to="/project-list">
@@ -96,5 +99,9 @@
 
   main {
     width: 1500px;
+  }
+
+  .index-2 {
+    z-index: 3;
   }
 </style>

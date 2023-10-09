@@ -9,6 +9,7 @@
   const projects = ref([]);
 
   async function fetchClientData() {
+    store.dispatch('startLoading');
     try{
       const response = await axios.get(`http://localhost:3000/api/v1/client`);
       response.data.forEach(client => {
@@ -16,15 +17,24 @@
       })
     } catch(error) {
       console.log('クライアント情報の取得に失敗しました', error);
+    } finally {
+      setTimeout(() => {
+        store.dispatch('stopLoading');
+      }, 1000);
     }
   }
 
   async function fetchProjectData() {
+    store.dispatch('startLoading');
     try{
       const projectResponse = await axios.get(`http://localhost:3000/api/v1/project`);
       projects.value = projectResponse.data;
     } catch(error) {
       console.log('プロジェクト情報の取得に失敗しました', error);
+    } finally {
+      setTimeout(() => {
+        store.dispatch('stopLoading');
+      }, 1000);
     }
   }
 

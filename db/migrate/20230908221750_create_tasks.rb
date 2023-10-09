@@ -9,7 +9,7 @@ class CreateTasks < ActiveRecord::Migration[6.1]
       t.string :vehicles, null: false
       t.string :notes
       t.integer :status, null: false, default: 0
-      t.references :sheet_id, null: false, foreign_key: true
+      t.references :sheet, null: false, foreign_key: true
 
       t.timestamps
     end
