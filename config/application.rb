@@ -8,7 +8,7 @@ Bundler.require(*Rails.groups)
 
 module Liftee
   class Application < Rails::Application
-    config.load_defaults 6.1
+    config.load_defaults 7.0
     config.time_zone = 'Tokyo'
 
     config.session_store :cookie_store

@@ -9,6 +9,10 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/',
+      redirect: '/login'
+    },
+    {
       path: '/project-list',
       component: ProjectList,
       meta: { requiresAuth: true }
