@@ -12,6 +12,7 @@
     "@vuepic/vue-datepicker": "^6.1.0",
     "axios": "^1.4.0",
     "luxon": "^3.4.0",
+    "postcss-import": "^15.1.0",
     "postcss-preset-env": "^8.5.1",
     "ress": "^5.0.2",
     "vue": "^3.3.4",
