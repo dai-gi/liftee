@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_20_192652) do
-
+ActiveRecord::Schema[7.1].define(version: 2023_09_20_192652) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,8 +21,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.bigint "resource_id"
     t.string "author_type"
     t.bigint "author_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
     t.index ["namespace"], name: "index_active_admin_comments_on_namespace"
     t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
@@ -34,8 +33,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.string "email", null: false
     t.string "phone_number", null: false
     t.string "remarks"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.bigint "company_id"
     t.index ["company_id"], name: "index_clients_on_company_id"
   end
@@ -44,8 +43,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.string "name", null: false
     t.string "email", null: false
     t.string "phone_number", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "projects", force: :cascade do |t|
@@ -54,8 +53,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.date "end_date", null: false
     t.integer "status", default: 0, null: false
     t.string "overview"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.bigint "client_id"
     t.index ["client_id"], name: "index_projects_on_client_id"
   end
@@ -63,8 +62,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
   create_table "sheets", force: :cascade do |t|
     t.string "name"
     t.bigint "project_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_sheets_on_project_id"
   end
 
@@ -72,14 +71,14 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.string "trader_name", null: false
     t.string "name", null: false
     t.string "work_place", null: false
-    t.datetime "start_datetime", null: false
-    t.datetime "end_datetime", null: false
+    t.datetime "start_datetime", precision: nil, null: false
+    t.datetime "end_datetime", precision: nil, null: false
     t.string "vehicles", null: false
     t.string "notes"
     t.integer "status", default: 0, null: false
     t.bigint "sheet_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["sheet_id"], name: "index_tasks_on_sheet_id"
   end
 
@@ -91,8 +90,8 @@ ActiveRecord::Schema.define(version: 2023_09_20_192652) do
     t.string "password_digest", null: false
     t.integer "role", default: 0, null: false
     t.bigint "company_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["company_id"], name: "index_users_on_company_id"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
