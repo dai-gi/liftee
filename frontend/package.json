@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
     "@vuepic/vue-datepicker": "^6.1.0",
     "axios": "^1.4.0",
     "luxon": "^3.4.0",
     "postcss-import": "^15.1.0",
     "postcss-preset-env": "^8.5.1",
     "ress": "^5.0.2",
+    "vite": "^4.5.0",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4",
     "vuetify": "^3.3.10",
@@ -22,8 +24,6 @@
     "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
-    "@mdi/font": "^7.2.96",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "vite": "^4.4.5"
+    "@mdi/font": "^7.2.96"
   }
 }
